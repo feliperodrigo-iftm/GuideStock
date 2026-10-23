@@ -2,7 +2,7 @@
 <html lang="pt-BR" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GuideStock Uberaba - Guia Local de Estoques e Serviços</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -43,114 +43,202 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
         #map { z-index: 10; }
         .leaflet-popup-content-wrapper { border-radius: 12px; padding: 4px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        
+        /* Mobile Drawer Slide Animation */
+        .drawer-overlay { transition: opacity 0.3s ease-in-out; }
+        .drawer-content { transition: transform 0.3s ease-in-out; }
+
+        /* Mobile Bottom Sheet Modal effect */
+        @media (max-width: 639px) {
+            .mobile-bottom-sheet {
+                border-top-left-radius: 1.5rem;
+                border-top-right-radius: 1.5rem;
+                max-height: 90vh;
+            }
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col text-slate-800 bg-slate-50">
+<body class="min-h-screen flex flex-col text-slate-800 bg-slate-50 pb-20 md:pb-8">
 
     <!-- TOP HEADER -->
     <header class="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16 sm:h-20">
+                
                 <!-- Logo & Subtitle -->
-                <div class="flex items-center gap-3 cursor-pointer" onclick="resetFilters()">
-                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-brand-600 to-teal-700 text-white rounded-xl flex items-center justify-center shadow-md shadow-brand-600/20">
-                        <i class="fa-solid fa-store text-xl sm:text-2xl"></i>
+                <div class="flex items-center gap-2.5 cursor-pointer" onclick="resetFilters()">
+                    <div class="w-10 h-10 bg-gradient-to-br from-brand-600 to-teal-700 text-white rounded-xl flex items-center justify-center shadow-md shadow-brand-600/20 flex-shrink-0">
+                        <i class="fa-solid fa-store text-lg sm:text-xl"></i>
                     </div>
                     <div>
-                        <div class="flex items-center gap-2">
-                            <span class="font-extrabold text-xl sm:text-2xl tracking-tight text-slate-900">GuideStock</span>
-                            <span class="bg-brand-100 text-brand-800 text-xs font-bold px-2 py-0.5 rounded-full border border-brand-200">Uberaba</span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-extrabold text-lg sm:text-2xl tracking-tight text-slate-900">GuideStock</span>
+                            <span class="bg-brand-100 text-brand-800 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full border border-brand-200">Uberaba</span>
                         </div>
-                        <p class="text-xs text-slate-500 font-medium hidden sm:block">Estoque Local & Serviços em Tempo Real em Uberaba - MG</p>
+                        <p class="text-[11px] text-slate-500 font-medium hidden md:block">Estoque Local & Serviços em Tempo Real em Uberaba - MG</p>
                     </div>
                 </div>
 
-                <!-- Right Action Buttons (Dynamic based on Session) -->
-                <div class="flex items-center gap-2 sm:gap-3">
-                    <button onclick="toggleHelpModal()" class="p-2 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition" title="Ajuda / Como Funciona">
+                <!-- Desktop Action Buttons -->
+                <div class="hidden md:flex items-center gap-3">
+                    <button onclick="toggleHelpModal()" class="p-2 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition" title="Como Funciona">
                         <i class="fa-regular fa-circle-question text-xl"></i>
                     </button>
                     
-                    <!-- GUEST STATE (NOT LOGGED IN) -->
-                    <div id="headerGuestActions" class="flex items-center gap-2">
-                        <button onclick="openAuthModal('login')" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-100 rounded-xl transition">
+                    <!-- Guest State (Desktop) -->
+                    <div id="desktopGuestActions" class="flex items-center gap-2">
+                        <button onclick="openAuthModal('login')" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-100 rounded-xl transition">
                             <i class="fa-solid fa-right-to-bracket text-slate-500"></i>
                             <span>Entrar</span>
                         </button>
 
-                        <button onclick="openAuthModal('register')" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-xl transition border border-brand-200">
+                        <button onclick="openAuthModal('register_consumer')" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-xl transition border border-brand-200">
                             <i class="fa-solid fa-user-plus text-brand-600"></i>
                             <span>Criar Conta</span>
                         </button>
                     </div>
 
-                    <!-- LOGGED IN STATE -->
-                    <div id="headerUserActions" class="hidden flex items-center gap-2">
+                    <!-- Logged In State (Desktop) -->
+                    <div id="desktopUserActions" class="hidden flex items-center gap-2">
                         <div class="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
-                            <div class="w-7 h-7 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs">
-                                <i class="fa-solid fa-user" id="userAvatarIcon"></i>
+                            <div class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-xs">
+                                <i class="fa-solid fa-user" id="desktopAvatarIcon"></i>
                             </div>
                             <div class="text-left text-xs leading-tight">
-                                <span id="headerUserName" class="font-bold text-slate-900 block truncate max-w-[110px] sm:max-w-[150px]">Usuário</span>
-                                <span id="headerUserRole" class="text-[10px] text-brand-700 font-semibold uppercase">Consumidor</span>
+                                <span id="desktopUserName" class="font-bold text-slate-900 block truncate max-w-[130px]">Usuário</span>
+                                <span id="desktopUserRole" class="text-[10px] text-brand-700 font-semibold uppercase">Consumidor</span>
                             </div>
                         </div>
 
-                        <button onclick="handleLogout()" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition" title="Sair da Conta">
+                        <button onclick="handleLogout()" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition" title="Sair">
                             <i class="fa-solid fa-right-from-bracket text-lg"></i>
                         </button>
                     </div>
 
-                    <!-- MERCHANT REGISTER BTN -->
-                    <button onclick="openRegisterMerchantModal()" class="inline-flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition active:scale-95">
+                    <!-- Register Business CTA Button -->
+                    <button onclick="openAuthModal('register_merchant')" class="inline-flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition active:scale-95">
                         <i class="fa-solid fa-plus-circle"></i>
-                        <span class="hidden md:inline">Cadastrar Loja / Prestador</span>
-                        <span class="md:hidden">Cadastrar</span>
+                        <span>Cadastrar Loja / Prestador</span>
                     </button>
                 </div>
+
+                <!-- Mobile Hamburger Button -->
+                <div class="flex md:hidden items-center gap-2">
+                    <button onclick="openAuthModal('login')" class="p-2 text-brand-700 bg-brand-50 rounded-xl font-bold text-xs flex items-center gap-1">
+                        <i class="fa-solid fa-user"></i>
+                        <span id="mobileHeaderUserText">Entrar</span>
+                    </button>
+                    <button onclick="toggleMobileDrawer()" class="p-2.5 text-slate-700 hover:bg-slate-100 rounded-xl transition" aria-label="Abrir Menu">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+
             </div>
         </div>
     </header>
 
+    <!-- MOBILE NAVIGATION DRAWER (Slide-over Sidebar) -->
+    <div id="mobileDrawer" class="fixed inset-0 z-50 hidden">
+        <!-- Backdrop -->
+        <div onclick="toggleMobileDrawer()" class="drawer-overlay absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+        
+        <!-- Drawer Panel -->
+        <div class="drawer-content absolute top-0 right-0 bottom-0 w-4/5 max-w-xs bg-white shadow-2xl flex flex-col justify-between p-5 overflow-y-auto">
+            <div class="space-y-6">
+                
+                <!-- Drawer Header -->
+                <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 bg-brand-600 text-white rounded-lg flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-store"></i>
+                        </div>
+                        <span class="font-extrabold text-slate-900">GuideStock Uberaba</span>
+                    </div>
+                    <button onclick="toggleMobileDrawer()" class="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- User Info Profile inside Drawer -->
+                <div id="drawerUserCard" class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+                    <!-- Dynamic user details or Guest state -->
+                </div>
+
+                <!-- Drawer Navigation Links -->
+                <div class="space-y-1 font-semibold text-sm">
+                    <button onclick="resetFilters(); toggleMobileDrawer();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-100 transition">
+                        <i class="fa-solid fa-house text-brand-600 w-5"></i>
+                        <span>Página Inicial</span>
+                    </button>
+                    
+                    <button onclick="scrollToMap(); toggleMobileDrawer();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-100 transition">
+                        <i class="fa-solid fa-map-location-dot text-blue-600 w-5"></i>
+                        <span>Mapa de Lojas em Uberaba</span>
+                    </button>
+
+                    <button onclick="openAuthModal('register_consumer'); toggleMobileDrawer();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-100 transition">
+                        <i class="fa-solid fa-user-plus text-emerald-600 w-5"></i>
+                        <span>Cadastrar Consumidor</span>
+                    </button>
+
+                    <button onclick="openAuthModal('register_merchant'); toggleMobileDrawer();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-100 transition">
+                        <i class="fa-solid fa-store text-purple-600 w-5"></i>
+                        <span>Cadastrar Lojista / Prestador</span>
+                    </button>
+
+                    <button onclick="toggleHelpModal(); toggleMobileDrawer();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-slate-100 transition">
+                        <i class="fa-regular fa-circle-question text-amber-500 w-5"></i>
+                        <span>Como Funciona / Dúvidas</span>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Drawer Footer Logout / Login -->
+            <div id="drawerFooter" class="pt-4 border-t border-slate-100">
+                <!-- Dynamically injected -->
+            </div>
+        </div>
+    </div>
+
     <!-- HERO SECTION -->
-    <section class="bg-slate-900 text-white py-10 sm:py-14 relative overflow-hidden">
+    <section class="bg-slate-900 text-white py-8 sm:py-14 relative overflow-hidden">
         <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px]"></div>
         
         <div class="max-w-5xl mx-auto px-4 sm:px-6 relative z-10 text-center">
             
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-brand-400 text-xs sm:text-sm font-medium mb-4">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-brand-400 text-xs font-medium mb-3">
                 <span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
-                <span>Produtos em Estoque & Serviços Locais em Uberaba</span>
+                <span>Produtos & Serviços Locais em Uberaba</span>
             </div>
 
-            <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight mb-3">
+            <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight mb-2 sm:mb-3">
                 O que você precisa comprar ou contratar hoje?
             </h1>
-            <p class="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto mb-8">
-                Encontre o produto exato em estoque ou agende serviços com profissionais recomendados no seu bairro em Uberaba sem intermediários.
+            <p class="text-xs sm:text-base text-slate-300 max-w-2xl mx-auto mb-6">
+                Encontre o produto exato em estoque ou agende serviços com profissionais em Uberaba - MG.
             </p>
 
-            <!-- TYPE SELECTOR TABS (Todos, Produtos, Serviços) -->
-            <div class="flex justify-center mb-6">
-                <div class="bg-slate-800/90 p-1 rounded-2xl border border-slate-700 inline-flex shadow-inner">
-                    <button id="tab-type-all" onclick="setTypeFilter('all')" class="px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 bg-brand-600 text-white shadow">
+            <!-- TYPE SELECTOR TABS -->
+            <div class="flex justify-center mb-5">
+                <div class="bg-slate-800/90 p-1 rounded-2xl border border-slate-700 inline-flex shadow-inner text-xs sm:text-sm">
+                    <button id="tab-type-all" onclick="setTypeFilter('all')" class="px-3.5 sm:px-6 py-2 rounded-xl font-bold transition flex items-center gap-1.5 bg-brand-600 text-white shadow">
                         <i class="fa-solid fa-border-all"></i>
                         <span>Todos</span>
                     </button>
-                    <button id="tab-type-products" onclick="setTypeFilter('product')" class="px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-700/50">
+                    <button id="tab-type-products" onclick="setTypeFilter('product')" class="px-3.5 sm:px-6 py-2 rounded-xl font-bold transition flex items-center gap-1.5 text-slate-300 hover:text-white">
                         <i class="fa-solid fa-box-open text-emerald-400"></i>
-                        <span>📦 Produtos em Estoque</span>
+                        <span>📦 Estoque</span>
                     </button>
-                    <button id="tab-type-services" onclick="setTypeFilter('service')" class="px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-700/50">
+                    <button id="tab-type-services" onclick="setTypeFilter('service')" class="px-3.5 sm:px-6 py-2 rounded-xl font-bold transition flex items-center gap-1.5 text-slate-300 hover:text-white">
                         <i class="fa-solid fa-wrench text-blue-400"></i>
-                        <span>🛠️ Serviços Locais</span>
+                        <span>🛠️ Serviços</span>
                     </button>
                 </div>
             </div>
@@ -160,13 +248,13 @@
                 
                 <!-- Search Input -->
                 <div class="relative flex-1 w-full">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="searchInput" oninput="renderApp()" placeholder="Buscar produto, serviço ou loja (ex: ar-condicionado, troca de tela, ração, bateria)..." class="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" id="searchInput" oninput="renderApp()" placeholder="Buscar produto, serviço ou loja (ex: ar-condicionado, troca de tela, ração)..." class="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
                 </div>
 
                 <!-- Neighborhood Dropdown -->
                 <div class="relative w-full md:w-56">
-                    <i class="fa-solid fa-location-dot absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-600"></i>
+                    <i class="fa-solid fa-location-dot absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-600 text-sm"></i>
                     <select id="neighborhoodSelect" onchange="renderApp()" class="w-full pl-10 pr-8 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 appearance-none cursor-pointer">
                         <option value="all">Todos os Bairros</option>
                         <option value="Centro">Centro</option>
@@ -180,15 +268,15 @@
                     <i class="fa-solid fa-chevron-down absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                 </div>
 
-                <!-- Submit / Clear Button -->
-                <button onclick="resetFilters()" class="w-full md:w-auto px-5 py-2.5 sm:py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-filter"></i>
-                    <span>Filtrar</span>
+                <!-- Clear / Filter Button -->
+                <button onclick="resetFilters()" class="w-full md:w-auto px-5 py-2.5 sm:py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    <span>Atualizar</span>
                 </button>
             </div>
 
-            <!-- CATEGORY PILLS -->
-            <div id="categoryPills" class="flex items-center justify-start sm:justify-center gap-2 mt-6 overflow-x-auto pb-2 custom-scrollbar text-xs">
+            <!-- CATEGORY PILLS (Horizontal Scrollable) -->
+            <div id="categoryPills" class="flex items-center justify-start sm:justify-center gap-2 mt-5 overflow-x-auto pb-2 custom-scrollbar text-xs">
                 <!-- Dynamically injected Pills -->
             </div>
 
@@ -196,81 +284,109 @@
     </section>
 
     <!-- MAP SECTION -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4 relative z-20 mb-8">
+    <section id="mapSection" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-3 relative z-20 mb-6">
         <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-3 sm:p-4">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
                 <div>
-                    <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <h2 class="text-sm sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                         <i class="fa-solid fa-map-location-dot text-brand-600"></i>
                         <span>Mapa de Lojas e Serviços em Uberaba - MG</span>
                     </h2>
-                    <p class="text-xs text-slate-500">Clique nos marcadores para ver estoques, preços e solicitar via WhatsApp</p>
+                    <p class="text-[11px] sm:text-xs text-slate-500">Toque nos marcadores para ver locais, valores e contato via WhatsApp</p>
                 </div>
                 
-                <div class="flex items-center gap-3 text-xs">
+                <div class="flex items-center gap-2.5 text-[11px] sm:text-xs">
                     <span class="inline-flex items-center gap-1 font-medium text-slate-600">
-                        <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Produtos
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Produtos
                     </span>
                     <span class="inline-flex items-center gap-1 font-medium text-slate-600">
-                        <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span> Serviços
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> Serviços
                     </span>
                     <span class="inline-flex items-center gap-1 font-medium text-slate-600">
-                        <span class="w-3 h-3 rounded-full bg-purple-500 inline-block"></span> Ambos
+                        <span class="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block"></span> Ambos
                     </span>
                     <button onclick="recenterMap()" class="ml-auto text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg font-medium transition">
-                        <i class="fa-solid fa-crosshairs"></i> Uberaba
+                        <i class="fa-solid fa-crosshairs"></i> Centrar
                     </button>
                 </div>
             </div>
 
             <!-- LEAFLET MAP CONTAINER -->
-            <div id="map" class="w-full h-64 sm:h-80 md:h-96 rounded-xl mt-3 border border-slate-200"></div>
+            <div id="map" class="w-full h-56 sm:h-80 md:h-96 rounded-xl mt-3 border border-slate-200"></div>
         </div>
     </section>
 
-    <!-- MAIN CONTENT: STORES & SERVICE PROVIDERS -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+    <!-- MAIN CONTENT: MERCHANTS AND SERVICES -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 mb-8">
         
         <!-- Results Header -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
             <div>
-                <h3 id="resultsCountTitle" class="text-xl font-extrabold text-slate-900">
+                <h3 id="resultsCountTitle" class="text-lg sm:text-xl font-extrabold text-slate-900">
                     Locais Cadastrados em Uberaba
                 </h3>
-                <p id="resultsSubTitle" class="text-xs sm:text-sm text-slate-500">Exibindo estabelecimentos com estoque ou serviços disponíveis</p>
+                <p id="resultsSubTitle" class="text-xs text-slate-500">Estabelecimentos com itens em estoque e prestadores disponíveis</p>
             </div>
 
             <div class="flex items-center gap-2">
-                <span class="text-xs text-slate-500 font-medium">Exibir:</span>
-                <select id="sortSelect" onchange="renderApp()" class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <span class="text-xs text-slate-500 font-medium">Ordenar:</span>
+                <select id="sortSelect" onchange="renderApp()" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
                     <option value="rating">Melhores Avaliados</option>
                     <option value="name">Nome (A-Z)</option>
-                    <option value="items">Mais Opções / Serviços</option>
+                    <option value="items">Mais Ofertas / Serviços</option>
                 </select>
             </div>
         </div>
 
         <!-- CARDS GRID -->
-        <div id="merchantGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div id="merchantGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <!-- Dynamic Merchant Cards -->
         </div>
 
         <!-- EMPTY STATE -->
-        <div id="emptyState" class="hidden text-center py-16 bg-white rounded-2xl border border-slate-200 p-8">
-            <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+        <div id="emptyState" class="hidden text-center py-12 bg-white rounded-2xl border border-slate-200 p-6">
+            <div class="w-14 h-14 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
                 <i class="fa-solid fa-magnifying-glass"></i>
             </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-1">Nenhum resultado encontrado em Uberaba</h3>
-            <p class="text-slate-500 text-sm max-w-md mx-auto mb-6">Não encontramos produtos ou serviços correspondentes aos seus filtros de busca no momento.</p>
-            <button onclick="resetFilters()" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-xl transition">
-                Limpar Todos os Filtros
+            <h3 class="text-base font-bold text-slate-800 mb-1">Nenhum local encontrado em Uberaba</h3>
+            <p class="text-slate-500 text-xs max-w-md mx-auto mb-5">Tente alterar o bairro selecionado ou o termo digitado na busca.</p>
+            <button onclick="resetFilters()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl transition">
+                Limpar Filtros
             </button>
         </div>
 
     </main>
 
+    <!-- FIXED MOBILE BOTTOM NAVIGATION BAR (Smartphones only) -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 md:hidden shadow-lg flex items-center justify-around py-1.5 px-2 font-medium text-[11px] text-slate-600">
+        <button onclick="resetFilters(); window.scrollTo({top:0, behavior:'smooth'});" class="flex flex-col items-center gap-1 p-1 text-brand-700">
+            <i class="fa-solid fa-house text-lg"></i>
+            <span>Início</span>
+        </button>
+
+        <button onclick="focusSearch()" class="flex flex-col items-center gap-1 p-1 hover:text-brand-600">
+            <i class="fa-solid fa-magnifying-glass text-lg"></i>
+            <span>Buscar</span>
+        </button>
+
+        <button onclick="scrollToMap()" class="flex flex-col items-center gap-1 p-1 hover:text-brand-600">
+            <i class="fa-solid fa-map-location-dot text-lg"></i>
+            <span>Mapa</span>
+        </button>
+
+        <button onclick="openAuthModal('register_merchant')" class="flex flex-col items-center gap-1 p-1 text-emerald-600 font-bold">
+            <i class="fa-solid fa-circle-plus text-xl"></i>
+            <span>Cadastrar</span>
+        </button>
+
+        <button onclick="openAuthModal('login')" class="flex flex-col items-center gap-1 p-1 hover:text-brand-600">
+            <i class="fa-solid fa-user text-lg" id="bottomNavUserIcon"></i>
+            <span id="bottomNavUserText">Conta</span>
+        </button>
+    </nav>
+
     <!-- FOOTER -->
-    <footer class="bg-slate-900 text-slate-400 text-xs py-10 border-t border-slate-800">
+    <footer class="bg-slate-900 text-slate-400 text-xs py-8 border-t border-slate-800 hidden md:block">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div class="flex items-center gap-3">
@@ -279,51 +395,57 @@
                     </div>
                     <div>
                         <span class="font-bold text-white text-sm">GuideStock Uberaba</span>
-                        <p class="text-slate-500 text-xs">Desenvolvido para valorizar o comércio local e prestadores de serviços de Uberaba - MG</p>
+                        <p class="text-slate-500 text-xs">Comércio local e prestadores de serviços de Uberaba - MG</p>
                     </div>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-6 text-slate-400 font-medium">
                     <button onclick="toggleHelpModal()" class="hover:text-white transition">Dúvidas Frequentes</button>
-                    <button onclick="openRegisterMerchantModal()" class="hover:text-white transition">Cadastrar minha Loja/Serviço</button>
-                    <button onclick="openAuthModal('login')" class="hover:text-white transition">Área do Usuário / Login</button>
+                    <button onclick="openAuthModal('register_merchant')" class="hover:text-white transition">Cadastrar Loja/Serviço</button>
+                    <button onclick="openAuthModal('login')" class="hover:text-white transition">Login / Conta</button>
                 </div>
 
                 <div class="text-slate-500">
-                    &copy; 2026 GuideStock / Uberaba - MG.
+                    &copy; 2026 GuideStock Uberaba.
                 </div>
             </div>
         </div>
     </footer>
 
 
-    <!-- MODAL DE AUTENTICAÇÃO (LOGIN & CADASTRO DE CONSUMIDOR) -->
-    <div id="authModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden my-auto flex flex-col">
+    <!-- MODAL UNIFICADO DE AUTENTICAÇÃO (LOGIN, CONSUMIDOR E LOJISTA) -->
+    <div id="authModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden my-0 sm:my-auto flex flex-col mobile-bottom-sheet max-h-[92vh]">
             
+            <!-- Handle indicator for mobile -->
+            <div class="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mt-2 sm:hidden"></div>
+
             <!-- Auth Header Tabs -->
             <div class="bg-slate-900 p-4 text-white relative">
-                <button onclick="closeModal('authModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <button onclick="closeModal('authModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1">
                     <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
-                <div class="flex justify-center gap-2 mt-2 bg-slate-800 p-1 rounded-xl">
-                    <button id="authTabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-lg text-xs font-bold transition bg-brand-600 text-white shadow">
-                        <i class="fa-solid fa-right-to-bracket mr-1"></i> Entrar
+                <div class="flex justify-center gap-1.5 mt-2 bg-slate-800 p-1 rounded-xl text-xs font-bold">
+                    <button id="authTabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-lg transition bg-brand-600 text-white shadow">
+                        Entrar
                     </button>
-                    <button id="authTabRegisterBtn" onclick="switchAuthTab('register')" class="flex-1 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white">
-                        <i class="fa-solid fa-user-plus mr-1"></i> Cadastro Consumidor
+                    <button id="authTabConsBtn" onclick="switchAuthTab('register_consumer')" class="flex-1 py-2 rounded-lg transition text-slate-300 hover:text-white">
+                        Consumidor
+                    </button>
+                    <button id="authTabMerchBtn" onclick="switchAuthTab('register_merchant')" class="flex-1 py-2 rounded-lg transition text-slate-300 hover:text-white">
+                        Lojista/Prestador
                     </button>
                 </div>
             </div>
 
             <!-- TAB 1: FORMULÁRIO DE LOGIN -->
-            <div id="authTabLogin" class="p-5 sm:p-6 space-y-4">
+            <div id="authTabLogin" class="p-5 sm:p-6 space-y-4 overflow-y-auto">
                 <div class="text-center">
-                    <h3 class="text-lg font-extrabold text-slate-900">Acesse sua Conta</h3>
-                    <p class="text-xs text-slate-500 mt-1">Conecte-se para salvar favoritos e contatar estabelecimentos</p>
+                    <h3 class="text-base sm:text-lg font-extrabold text-slate-900">Acesse sua Conta</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Conecte-se para salvar preferências e acionar lojistas</p>
                 </div>
 
-                <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-3.5 text-xs sm:text-sm">
+                <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-3 text-xs sm:text-sm">
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">E-mail</label>
                         <input type="email" id="loginEmail" required placeholder="seuemail@exemplo.com" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
@@ -334,34 +456,34 @@
                         <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
                     </div>
 
-                    <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md shadow-brand-600/20 transition text-sm">
+                    <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition text-sm">
                         Entrar na Conta
                     </button>
                 </form>
 
-                <hr class="border-slate-200 my-4">
+                <hr class="border-slate-200 my-3">
 
                 <!-- 1-CLICK DEMO LOGINS -->
                 <div>
-                    <span class="block text-center text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Acesso Rápido para Teste</span>
+                    <span class="block text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Acesso Rápido para Teste Demo</span>
                     <div class="grid grid-cols-1 gap-2">
                         <button onclick="loginAsDemo('consumer')" class="w-full py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 border border-slate-200">
                             <i class="fa-solid fa-user text-brand-600"></i>
-                            <span>Entrar como Consumidor Teste (João Silva)</span>
+                            <span>Entrar como Consumidor (João Silva)</span>
                         </button>
                         <button onclick="loginAsDemo('merchant')" class="w-full py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 border border-slate-200">
                             <i class="fa-solid fa-store text-blue-600"></i>
-                            <span>Entrar como Lojista Teste (TechZone Uberaba)</span>
+                            <span>Entrar como Lojista (TechZone Uberaba)</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- TAB 2: FORMULÁRIO DE CADASTRO DO CONSUMIDOR -->
-            <div id="authTabRegister" class="hidden p-5 sm:p-6 space-y-4">
+            <!-- TAB 2: CADASTRO DO CONSUMIDOR -->
+            <div id="authTabRegisterConsumer" class="hidden p-5 sm:p-6 space-y-3.5 overflow-y-auto">
                 <div class="text-center">
-                    <h3 class="text-lg font-extrabold text-slate-900">Cadastro de Consumidor</h3>
-                    <p class="text-xs text-slate-500 mt-1">Crie sua conta gratuita em Uberaba - MG</p>
+                    <h3 class="text-base sm:text-lg font-extrabold text-slate-900">Cadastro do Consumidor</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Crie sua conta gratuita para interagir com o comércio local</p>
                 </div>
 
                 <form id="consumerRegisterForm" onsubmit="handleConsumerRegisterSubmit(event)" class="space-y-3 text-xs sm:text-sm">
@@ -400,8 +522,89 @@
                         <input type="password" id="regConsumerPassword" required minlength="4" placeholder="Crie uma senha" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
                     </div>
 
-                    <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md shadow-brand-600/20 transition text-sm mt-2">
-                        Concluir Cadastro de Consumidor
+                    <button type="submit" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition text-xs sm:text-sm">
+                        Concluir Cadastro do Consumidor
+                    </button>
+                </form>
+            </div>
+
+            <!-- TAB 3: CADASTRO DO LOJISTA / PRESTADOR -->
+            <div id="authTabRegisterMerchant" class="hidden p-5 sm:p-6 space-y-3.5 overflow-y-auto">
+                <div class="text-center">
+                    <h3 class="text-base sm:text-lg font-extrabold text-slate-900">Cadastrar Empresa / Serviço</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Divulgue seus produtos e serviços em Uberaba</p>
+                </div>
+
+                <form id="merchantRegisterForm" onsubmit="handleMerchantRegisterSubmit(event)" class="space-y-3 text-xs sm:text-sm">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Nome da Empresa / Profissional *</label>
+                        <input type="text" id="regMerchName" required placeholder="Ex: EletroFix Uberaba" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Categoria *</label>
+                            <select id="regMerchCategory" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                <option value="Assistência Técnica">Assistência Técnica</option>
+                                <option value="Climatização">Climatização & Ar</option>
+                                <option value="Mecânica">Mecânica & Auto</option>
+                                <option value="Casa & Piscina">Casa & Piscina</option>
+                                <option value="Pet Shop">Pet & Vet</option>
+                                <option value="Eletrônicos">Eletrônicos</option>
+                                <option value="Saúde e Farma">Saúde & Farma</option>
+                                <option value="Vestuário">Moda & Vestuário</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Tipo de Oferta *</label>
+                            <select id="regMerchType" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                <option value="product">📦 Produtos em Estoque</option>
+                                <option value="service">🛠️ Serviços Prestados</option>
+                                <option value="both">📦 Produtos & 🛠️ Serviços</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Endereço Completo *</label>
+                            <input type="text" id="regMerchAddress" required placeholder="Ex: Av. Leopoldino, 1500" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Bairro em Uberaba *</label>
+                            <select id="regMerchNeighborhood" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                <option value="Centro">Centro</option>
+                                <option value="Abadia">Abadia</option>
+                                <option value="Mercês">Mercês</option>
+                                <option value="Fabrício">Fabrício</option>
+                                <option value="Santa Marta">Santa Marta</option>
+                                <option value="Santos Dumont">Santos Dumont</option>
+                                <option value="Estados Unidos">Estados Unidos</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">WhatsApp (com DDD) *</label>
+                            <input type="text" id="regMerchPhone" required placeholder="34999998888" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">E-mail de Acesso *</label>
+                            <input type="email" id="regMerchEmail" required placeholder="loja@exemplo.com" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Senha *</label>
+                        <input type="password" id="regMerchPassword" required minlength="4" placeholder="Crie uma senha" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition text-xs sm:text-sm">
+                        Concluir Cadastro da Empresa
                     </button>
                 </form>
             </div>
@@ -410,28 +613,30 @@
     </div>
 
 
-    <!-- MODAL: DETALHES DO ESTABELECIMENTO / SERVIÇOS & CATÁLOGO -->
-    <div id="catalogModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto">
+    <!-- MODAL: DETALHES DO ESTABELECIMENTO & ADIÇÃO/EXCLUSÃO DE ITENS -->
+    <div id="catalogModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
+        <div class="bg-white w-full max-w-3xl rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] my-0 sm:my-auto mobile-bottom-sheet">
             
+            <div class="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mt-2 sm:hidden"></div>
+
             <!-- Modal Header -->
             <div class="p-4 sm:p-6 bg-slate-900 text-white relative flex-shrink-0">
                 <button onclick="closeModal('catalogModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center transition">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
 
-                <div class="flex items-start gap-4 pr-8">
-                    <div id="modalMerchantIcon" class="w-12 h-12 sm:w-14 sm:h-14 bg-brand-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold flex-shrink-0 shadow-md">
+                <div class="flex items-start gap-3.5 pr-8">
+                    <div id="modalMerchantIcon" class="w-12 h-12 bg-brand-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold flex-shrink-0 shadow-md">
                         <i class="fa-solid fa-store"></i>
                     </div>
                     <div>
                         <div class="flex items-center gap-2 flex-wrap mb-1">
-                            <h2 id="modalMerchantName" class="text-xl sm:text-2xl font-extrabold text-white">Nome da Loja</h2>
-                            <span id="modalCategoryBadge" class="bg-brand-500/20 text-brand-300 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-brand-500/30">Categoria</span>
+                            <h2 id="modalMerchantName" class="text-lg sm:text-2xl font-extrabold text-white">Nome da Loja</h2>
+                            <span id="modalCategoryBadge" class="bg-brand-500/20 text-brand-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-brand-500/30">Categoria</span>
                         </div>
-                        <p id="modalMerchantAddress" class="text-xs sm:text-sm text-slate-300 mb-2">Endereço em Uberaba</p>
+                        <p id="modalMerchantAddress" class="text-xs text-slate-300 mb-1.5">Endereço em Uberaba</p>
                         
-                        <div class="flex items-center gap-4 text-xs text-slate-300">
+                        <div class="flex items-center gap-3 text-xs text-slate-300">
                             <span class="flex items-center gap-1 text-amber-400 font-bold">
                                 <i class="fa-solid fa-star"></i> <span id="modalMerchantRating">4.9</span>
                             </span>
@@ -443,35 +648,41 @@
                 </div>
             </div>
 
-            <!-- Modal Sub-Filter Tabs (Todos, Produtos, Serviços) -->
-            <div class="px-4 sm:px-6 py-3 bg-slate-100 border-b border-slate-200 flex items-center justify-between gap-2 flex-shrink-0">
-                <div class="flex items-center gap-2">
-                    <button id="modalTabAll" onclick="filterModalCatalog('all')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-800 shadow-sm border border-slate-200">
+            <!-- Filter Tabs inside Modal + Owner Add Item CTA -->
+            <div class="px-4 py-2.5 bg-slate-100 border-b border-slate-200 flex items-center justify-between gap-2 flex-shrink-0">
+                <div class="flex items-center gap-1.5">
+                    <button id="modalTabAll" onclick="filterModalCatalog('all')" class="px-3 py-1 rounded-lg text-xs font-bold bg-white text-slate-800 shadow-sm border border-slate-200">
                         Todos (<span id="countModalAll">0</span>)
                     </button>
-                    <button id="modalTabProduct" onclick="filterModalCatalog('product')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-white transition">
-                        📦 Produtos (<span id="countModalProduct">0</span>)
+                    <button id="modalTabProduct" onclick="filterModalCatalog('product')" class="px-3 py-1 rounded-lg text-xs font-bold text-slate-600 hover:bg-white transition">
+                        📦 Estoque (<span id="countModalProduct">0</span>)
                     </button>
-                    <button id="modalTabService" onclick="filterModalCatalog('service')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-white transition">
+                    <button id="modalTabService" onclick="filterModalCatalog('service')" class="px-3 py-1 rounded-lg text-xs font-bold text-slate-600 hover:bg-white transition">
                         🛠️ Serviços (<span id="countModalService">0</span>)
                     </button>
                 </div>
-                <span class="text-xs text-slate-500 hidden sm:inline">WhatsApp direto com o local</span>
+
+                <div id="ownerAddBtnContainer" class="hidden">
+                    <button onclick="openAddItemModal()" class="px-3 py-1 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-lg shadow transition flex items-center gap-1">
+                        <i class="fa-solid fa-plus"></i>
+                        <span class="hidden sm:inline">Adicionar Item</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Items List -->
             <div id="modalItemsContainer" class="p-4 sm:p-6 overflow-y-auto space-y-3 custom-scrollbar flex-1 bg-slate-50">
-                <!-- Injected Items -->
+                <!-- Dynamic Items -->
             </div>
 
             <!-- Modal Footer -->
-            <div class="p-4 bg-white border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0">
-                <a id="modalGmapsBtn" href="#" target="_blank" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 px-4 py-2.5 rounded-xl transition">
+            <div class="p-3.5 bg-white border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 flex-shrink-0">
+                <a id="modalGmapsBtn" href="#" target="_blank" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-xl transition">
                     <i class="fa-solid fa-diamond-turn-right text-brand-600"></i>
                     <span>Abrir Rota no Google Maps</span>
                 </a>
 
-                <button onclick="closeModal('catalogModal')" class="w-full sm:w-auto px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs sm:text-sm rounded-xl transition">
+                <button onclick="closeModal('catalogModal')" class="w-full sm:w-auto px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl transition">
                     Fechar
                 </button>
             </div>
@@ -480,151 +691,75 @@
     </div>
 
 
-    <!-- MODAL: CADASTRAR LOJA OU PRESTADOR DE SERVIÇOS -->
-    <div id="merchantRegisterModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
-            
-            <div class="p-5 bg-slate-900 text-white flex items-center justify-between flex-shrink-0">
-                <div>
-                    <h3 class="text-lg font-extrabold flex items-center gap-2">
-                        <i class="fa-solid fa-store text-brand-400"></i>
-                        <span>Cadastrar Estabelecimento ou Prestador</span>
-                    </h3>
-                    <p class="text-xs text-slate-300">Publique seus produtos em estoque e serviços para moradores de Uberaba</p>
-                </div>
-                <button onclick="closeModal('merchantRegisterModal')" class="text-slate-400 hover:text-white">
-                    <i class="fa-solid fa-xmark text-xl"></i>
+    <!-- MODAL: ADICIONAR ITEM AO CATÁLOGO (PAINEL DO LOJISTA) -->
+    <div id="addItemModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden my-0 sm:my-auto p-5 space-y-4 mobile-bottom-sheet">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h3 class="font-extrabold text-slate-900 text-base">Adicionar Oferta / Item</h3>
+                <button onclick="closeModal('addItemModal')" class="text-slate-400 hover:text-slate-700">
+                    <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
 
-            <form id="merchantForm" onsubmit="handleMerchantFormSubmit(event)" class="p-5 overflow-y-auto space-y-4 custom-scrollbar text-xs sm:text-sm flex-1">
-                
-                <div class="bg-brand-50 p-3 rounded-xl border border-brand-200 text-brand-900 text-xs flex items-start gap-2.5">
-                    <i class="fa-solid fa-circle-info text-brand-600 text-base mt-0.5"></i>
-                    <span>Sua empresa ou serviço ficará imediatamente disponível nas buscas e no mapa interativo de Uberaba.</span>
+            <form id="addItemForm" onsubmit="handleAddItemSubmit(event)" class="space-y-3 text-xs sm:text-sm">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Tipo do Item *</label>
+                    <select id="newItemType" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <option value="product">📦 Produto Físico em Estoque</option>
+                        <option value="service">🛠️ Serviço Prestado</option>
+                    </select>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">Nome do Estabelecimento / Profissional *</label>
-                        <input type="text" id="regName" required placeholder="Ex: EletroFix Uberaba ou Maria Ar-Condicionado" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">Categoria Principal *</label>
-                        <select id="regCategory" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                            <option value="Assistência Técnica">Assistência Técnica & Consertos</option>
-                            <option value="Climatização">Climatização & Ar-Condicionado</option>
-                            <option value="Mecânica">Mecânica & Auto Center</option>
-                            <option value="Casa & Piscina">Serviços para Casa & Piscina</option>
-                            <option value="Pet Shop">Pet Shop & Veterinária</option>
-                            <option value="Eletrônicos">Eletrônicos & Acessórios</option>
-                            <option value="Saúde e Farma">Saúde & Farmácia</option>
-                            <option value="Vestuário">Moda & Vestuário</option>
-                        </select>
-                    </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Nome do Item ou Serviço *</label>
+                    <input type="text" id="newItemTitle" required placeholder="Ex: Higienização de Ar Split ou Capa de Celular" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">Endereço em Uberaba *</label>
-                        <input type="text" id="regAddress" required placeholder="Ex: Av. Leopoldino de Oliveira, 1500 - Centro" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <label class="block font-bold text-slate-700 mb-1">Preço (R$) *</label>
+                        <input type="number" step="0.01" id="newItemPrice" required placeholder="120.00" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
                     </div>
 
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">Bairro em Uberaba *</label>
-                        <select id="regNeighborhood" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                            <option value="Centro">Centro</option>
-                            <option value="Abadia">Abadia</option>
-                            <option value="Mercês">Mercês</option>
-                            <option value="Fabrício">Fabrício</option>
-                            <option value="Santa Marta">Santa Marta</option>
-                            <option value="Santos Dumont">Santos Dumont</option>
-                            <option value="Estados Unidos">Estados Unidos</option>
-                        </select>
+                        <label class="block font-bold text-slate-700 mb-1">Estoque / Prazo *</label>
+                        <input type="text" id="newItemExtra" required placeholder="Ex: 10 un ou Pronto em 24h" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">WhatsApp para Contato/Pedidos (apenas números) *</label>
-                    <input type="text" id="regPhone" required placeholder="34999998888" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    <label class="block font-bold text-slate-700 mb-1">Descrição Curta *</label>
+                    <input type="text" id="newItemDesc" required placeholder="Ex: Garantia de 3 meses e peças originais." class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
                 </div>
 
-                <hr class="border-slate-200 my-2">
-
-                <h4 class="font-extrabold text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-plus text-brand-600"></i>
-                    <span>Cadastrar Primeiro Item / Oferta</span>
-                </h4>
-
-                <div class="bg-slate-100 p-3 rounded-xl space-y-3">
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">Tipo de Oferta *</label>
-                        <div class="flex gap-4">
-                            <label class="inline-flex items-center gap-1.5 cursor-pointer font-semibold text-slate-800">
-                                <input type="radio" name="itemType" value="product" checked class="text-brand-600 focus:ring-brand-500">
-                                <span>📦 Produto Físico (Estoque)</span>
-                            </label>
-                            <label class="inline-flex items-center gap-1.5 cursor-pointer font-semibold text-slate-800">
-                                <input type="radio" name="itemType" value="service" class="text-blue-600 focus:ring-blue-500">
-                                <span>🛠️ Serviço Prestado</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block font-bold text-slate-700 mb-1">Nome do Item / Serviço *</label>
-                            <input type="text" id="newItemTitle" required placeholder="Ex: Higienização de Ar Split ou Fone Bluetooth" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                        </div>
-
-                        <div>
-                            <label class="block font-bold text-slate-700 mb-1">Preço (R$) *</label>
-                            <input type="number" step="0.01" id="newItemPrice" required placeholder="Ex: 150.00" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">Descrição Curta ou Prazo *</label>
-                        <input type="text" id="newItemDesc" required placeholder="Ex: Limpeza completa com garantia. Atendimento em até 24h" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                    </div>
-                </div>
-
-                <div class="flex justify-end gap-3 pt-2">
-                    <button type="button" onclick="closeModal('merchantRegisterModal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md shadow-brand-600/20 transition">
-                        Concluir Cadastro
-                    </button>
-                </div>
-
+                <button type="submit" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition text-xs sm:text-sm">
+                    Salvar Item no Catálogo
+                </button>
             </form>
-
         </div>
     </div>
 
 
     <!-- MODAL: HELP & FAQ -->
-    <div id="helpModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6 relative">
+    <div id="helpModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl p-5 relative mobile-bottom-sheet">
             <button onclick="toggleHelpModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
                 <i class="fa-solid fa-xmark text-xl"></i>
             </button>
-            <h3 class="text-xl font-extrabold text-slate-900 mb-3 flex items-center gap-2">
+            
+            <h3 class="text-base sm:text-lg font-extrabold text-slate-900 mb-3 flex items-center gap-2">
                 <i class="fa-solid fa-circle-question text-brand-600"></i>
                 <span>Como funciona o GuideStock?</span>
             </h3>
             
-            <div class="space-y-3 text-xs sm:text-sm text-slate-600">
-                <p><strong>1. Busca em Tempo Real:</strong> Você encontra produtos em estoque e serviços prestados por lojas e profissionais autônomos de Uberaba - MG.</p>
-                <p><strong>2. Contato Direto:</strong> Ao clicar em "Pedir no WhatsApp" ou "Agendar Serviço", você conversa direto com o estabelecimento sem taxa de intermediação.</p>
-                <p><strong>3. Mapa Interativo:</strong> Veja a localização exata no mapa de Uberaba com rotas tracejadas via Google Maps.</p>
-                <p><strong>4. Cadastro do Consumidor:</strong> Cadastre-se como consumidor para salvar preferências e entrar em contato com facilidade.</p>
-                <p><strong>5. Para Lojistas e Prestadores:</strong> Cadastre seu negócio gratuitamente para atrair clientes da sua região em Uberaba.</p>
+            <div class="space-y-2.5 text-xs text-slate-600">
+                <p><strong>1. Produtos & Serviços:</strong> Encontre itens físicos em estoque ou serviços agendáveis direto com lojistas de Uberaba - MG.</p>
+                <p><strong>2. Contato no WhatsApp:</strong> Clique para abrir o WhatsApp do estabelecimento com mensagem pré-formatada.</p>
+                <p><strong>3. Sem Intermediários:</strong> Negocie direto com o profissional da sua região.</p>
+                <p><strong>4. Cadastro Gratuito:</strong> Cadastre sua loja ou prestação de serviços para alcançar clientes no seu bairro.</p>
             </div>
 
-            <button onclick="toggleHelpModal()" class="w-full mt-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition">
+            <button onclick="toggleHelpModal()" class="w-full mt-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition text-xs">
                 Entendi
             </button>
         </div>
@@ -632,15 +767,15 @@
 
 
     <!-- TOAST NOTIFICATION -->
-    <div id="toast" class="fixed bottom-5 right-5 z-50 hidden bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-slate-700 transition">
+    <div id="toast" class="fixed bottom-16 sm:bottom-5 right-4 left-4 sm:left-auto z-50 hidden bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-slate-700 transition">
         <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
-        <span id="toastMessage" class="text-xs sm:text-sm font-medium">Ação realizada com sucesso!</span>
+        <span id="toastMessage" class="text-xs font-medium">Ação realizada com sucesso!</span>
     </div>
 
 
     <!-- JAVASCRIPT APPLICATION LOGIC -->
     <script>
-        // MOCK DATABASE & LOCALSTORAGE INITIALIZATION
+        // STORAGE & USERS INITIALIZATION
         let registeredUsers = JSON.parse(localStorage.getItem('guidestock_registered_users')) || [
             {
                 id: 'demo_consumer',
@@ -658,14 +793,15 @@
                 password: '123',
                 role: 'merchant',
                 phone: '34999881122',
-                neighborhood: 'Centro'
+                neighborhood: 'Centro',
+                merchantId: 'techzone'
             }
         ];
 
         let currentUser = JSON.parse(localStorage.getItem('guidestock_active_user')) || null;
 
-        // INITIAL MOCK DATA WITH STORES AND SERVICE PROVIDERS IN UBERABA - MG
-        let merchantsData = [
+        // MERCHANTS INITIAL DATABASE
+        let defaultMerchants = [
             {
                 id: 'techzone',
                 name: 'TechZone Uberaba',
@@ -681,9 +817,7 @@
                 items: [
                     { id: 't1', title: 'Fone Bluetooth Noise Cancelling', type: 'product', price: 189.90, desc: 'Bateria de longa duração com cancelamento ativo de ruído.', stock: 8 },
                     { id: 't2', title: 'Carregador Rápido Type-C 30W', type: 'product', price: 49.90, desc: 'Carga turbo compatível com iPhone e Android.', stock: 15 },
-                    { id: 't3', title: 'Powerbank Bateria Portátil 20000mAh', type: 'product', price: 129.00, desc: 'Carrega até 5 vezes seu smartphone.', stock: 5 },
-                    { id: 't4', title: 'Suporte Técnico & Formatação de PC/Notebook', type: 'service', price: 90.00, desc: 'Limpeza interna, troca de pasta térmica e otimização.', duration: 'Prazo: 24 horas' },
-                    { id: 't5', title: 'Aplicação de Película e Higienização Eletrônica', type: 'service', price: 25.00, desc: 'Aplicação com encaixe perfeito sem bolhas.', duration: 'Prazo: 15 minutos' }
+                    { id: 't3', title: 'Suporte Técnico & Formatação de PC/Notebook', type: 'service', price: 90.00, desc: 'Limpeza interna, troca de pasta térmica e otimização.', duration: 'Prazo: 24h' }
                 ]
             },
             {
@@ -699,9 +833,8 @@
                 rating: 5.0,
                 reviewsCount: 96,
                 items: [
-                    { id: 'rf1', title: 'Limpeza e Higienização Química de Ar-Condicionado Split', type: 'service', price: 150.00, desc: 'Elimina fungos, bactérias e maus odores. Inclui aplicação de bactericida.', duration: 'Atendimento em até 24h' },
-                    { id: 'rf2', title: 'Instalação Completa de Ar Split (9.000 a 12.000 BTUs)', type: 'service', price: 380.00, desc: 'Instalação com tubo de cobre, bomba de vácuo e teste de vazamento.', duration: 'Sob Agendamento' },
-                    { id: 'rf3', title: 'Carga de Gás Refrigerante R410a / R22', type: 'service', price: 180.00, desc: 'Diagnóstico de vazamento e recarga do gás refrigerante.', duration: 'Atendimento Express' }
+                    { id: 'rf1', title: 'Limpeza e Higienização Química de Ar Split', type: 'service', price: 150.00, desc: 'Elimina fungos, bactérias e maus odores com bactericida.', duration: 'Atendimento em 24h' },
+                    { id: 'rf2', title: 'Instalação Completa de Ar Split', type: 'service', price: 380.00, desc: 'Tubagem de cobre, bomba de vácuo e teste de vazamento.', duration: 'Sob Agendamento' }
                 ]
             },
             {
@@ -717,10 +850,9 @@
                 rating: 4.8,
                 reviewsCount: 142,
                 items: [
-                    { id: 'sf1', title: 'Troca de Tela Frontal Smartphone', type: 'service', price: 140.00, desc: 'Substituição da tela com peças de alta qualidade e garantia.', duration: 'Pronto em 1 hora' },
-                    { id: 'sf2', title: 'Troca de Bateria de Celular', type: 'service', price: 110.00, desc: 'Recupere a autonomia do seu aparelho.', duration: 'Pronto em 40 min' },
-                    { id: 'sf3', title: 'Desoxidação e Reparo Avançado em Placa', type: 'service', price: 190.00, desc: 'Recuperação de aparelhos molhados ou sem sinal de vida.', duration: 'Prazo: 24h a 48h' },
-                    { id: 'sf4', title: 'Capa Aveludada Premium para Smartphone', type: 'product', price: 35.00, desc: 'Proteção contra quedas e riscos.', stock: 20 }
+                    { id: 'sf1', title: 'Troca de Tela Frontal Smartphone', type: 'service', price: 140.00, desc: 'Substituição da tela com garantia.', duration: 'Pronto em 1 hora' },
+                    { id: 'sf2', title: 'Troca de Bateria de Celular', type: 'service', price: 110.00, desc: 'Recupere a autonomia do celular.', duration: 'Pronto em 40 min' },
+                    { id: 'sf3', title: 'Capa Aveludada Premium Smartphone', type: 'product', price: 35.00, desc: 'Proteção contra quedas e riscos.', stock: 20 }
                 ]
             },
             {
@@ -736,28 +868,8 @@
                 rating: 4.9,
                 reviewsCount: 215,
                 items: [
-                    { id: 'ac1', title: 'Alinhamento 3D + Balanceamento de 4 Rodas', type: 'service', price: 110.00, desc: 'Precisão computadorizada para maior vida útil dos pneus.', duration: 'Prazo: 45 minutos' },
-                    { id: 'ac2', title: 'Troca de Óleo do Motor + Filtro', type: 'service', price: 160.00, desc: 'Inclui óleo sintético e filtro novo.', duration: 'Prazo: 30 minutos' },
-                    { id: 'ac3', title: 'Revisão Sistema de Freios e Troca de Pastilhas', type: 'service', price: 180.00, desc: 'Checagem completa de segurança e pastilhas novas.', duration: 'Prazo: 2 horas' }
-                ]
-            },
-            {
-                id: 'piscinamerces',
-                name: 'Piscina & Lazer Limpeza Express',
-                category: 'Casa & Piscina',
-                type: 'both',
-                address: 'Av. Dona Maria Santana Borges, 320 - Mercês, Uberaba - MG',
-                neighborhood: 'Mercês',
-                lat: -19.7390,
-                lng: -47.9400,
-                phone: '34993456789',
-                rating: 4.9,
-                reviewsCount: 83,
-                items: [
-                    { id: 'pl1', title: 'Tratamento Químico e Aspiração de Piscina Residencial', type: 'service', price: 120.00, desc: 'Medição de pH/cloro, aspiração de fundo e escovação das paredes.', duration: 'Visita Agendada' },
-                    { id: 'pl2', title: 'Troca de Carga de Areia do Filtro da Piscina', type: 'service', price: 220.00, desc: 'Melhora a filtragem e transparência da água.', duration: 'Prazo: 3 horas' },
-                    { id: 'pl3', title: 'Kit Cloro Granulado para Piscina 10kg', type: 'product', price: 189.00, desc: 'Cloro multiação de alta pureza.', stock: 7 },
-                    { id: 'pl4', title: 'Boia Gigante Inflável Flamingo', type: 'product', price: 79.90, desc: 'Ideal para momentos de lazer e festas.', stock: 4 }
+                    { id: 'ac1', title: 'Alinhamento 3D + Balanceamento 4 Rodas', type: 'service', price: 110.00, desc: 'Precisão computadorizada para maior vida útil.', duration: 'Prazo: 45 min' },
+                    { id: 'ac2', title: 'Troca de Óleo do Motor + Filtro', type: 'service', price: 160.00, desc: 'Inclui óleo sintético e filtro novo.', duration: 'Prazo: 30 min' }
                 ]
             },
             {
@@ -773,119 +885,114 @@
                 rating: 4.8,
                 reviewsCount: 156,
                 items: [
-                    { id: 'pv1', title: 'Ração Premium Cães Adultos 15kg', type: 'product', price: 185.00, desc: 'Nutrição completa e sem corantes artificiais.', stock: 12 },
-                    { id: 'pv2', title: 'Antipulgas e Carrapatos Bravecto', type: 'product', price: 199.90, desc: 'Proteção por até 12 semanas.', stock: 8 },
-                    { id: 'pv3', title: 'Banho & Tosa Completa com Hidratação', type: 'service', price: 75.00, desc: 'Banho com shampoo neutro, corte de unhas e hidratação de pelos.', duration: 'Com hora marcada' },
-                    { id: 'pv4', title: 'Consulta Veterinária Geral em Clínica', type: 'service', price: 130.00, desc: 'Exame clínico geral preventivo ou diagnóstico.', duration: 'Agendamento Flexível' }
-                ]
-            },
-            {
-                id: 'drogaria',
-                name: 'Drogaria Uberaba Central',
-                category: 'Saúde e Farma',
-                type: 'product',
-                address: 'Rua Alfen Paixão, 410 - Fabrício, Uberaba - MG',
-                neighborhood: 'Fabrício',
-                lat: -19.7420,
-                lng: -47.9380,
-                phone: '34998884433',
-                rating: 4.9,
-                reviewsCount: 210,
-                items: [
-                    { id: 'dr1', title: 'Suplemento Whey Protein 900g', type: 'product', price: 110.00, desc: 'Proteína concentrada para ganho de massa muscular.', stock: 10 },
-                    { id: 'dr2', title: 'Kit Protetor Solar FPS 60 L\'Oreal', type: 'product', price: 69.90, desc: 'Toque seco e alta proteção UVA/UVB.', stock: 18 },
-                    { id: 'dr3', title: 'Multivitamínico A-Z 60 Cápsulas', type: 'product', price: 39.90, desc: 'Energia e imunidade diária.', stock: 25 }
-                ]
-            },
-            {
-                id: 'boutique',
-                name: 'Boutique Uberaba Style',
-                category: 'Vestuário',
-                type: 'both',
-                address: 'Av. Santa Beatriz, 1250 - Santa Marta, Uberaba - MG',
-                neighborhood: 'Santa Marta',
-                lat: -19.7450,
-                lng: -47.9500,
-                phone: '34996663322',
-                rating: 4.7,
-                reviewsCount: 89,
-                items: [
-                    { id: 'bt1', title: 'Vestido Linho Verão Uberaba', type: 'product', price: 159.90, desc: 'Tecido leve e elegante para dias quentes.', stock: 4 },
-                    { id: 'bt2', title: 'Camisa Polo Masculina Algodão', type: 'product', price: 89.90, desc: 'Várias cores e tamanhos disponíveis.', stock: 9 },
-                    { id: 'bt3', title: 'Ajustes e Bainhas Express de Roupas', type: 'service', price: 25.00, desc: 'Ajuste de barras de calças e vestidos na medida certa.', duration: 'Pronto em 24h' }
+                    { id: 'pv1', title: 'Ração Premium Cães Adultos 15kg', type: 'product', price: 185.00, desc: 'Nutrição completa e sem corantes.', stock: 12 },
+                    { id: 'pv2', title: 'Banho & Tosa Completa', type: 'service', price: 75.00, desc: 'Banho neutro, corte de unhas e hidratação.', duration: 'Hora marcada' }
                 ]
             }
         ];
 
+        let merchantsData = JSON.parse(localStorage.getItem('guidestock_merchants_data')) || defaultMerchants;
+
         // CATEGORIES DEFINITION
         const categoriesList = [
-            { id: 'all', name: 'Todas as Categorias', icon: 'fa-border-all' },
-            { id: 'Assistência Técnica', name: '🛠️ Assistência Técnica', icon: 'fa-wrench' },
-            { id: 'Climatização', name: '❄️ Climatização & Ar', icon: 'fa-snowflake' },
-            { id: 'Mecânica', name: '🚗 Mecânica & Auto', icon: 'fa-car' },
+            { id: 'all', name: 'Todas', icon: 'fa-border-all' },
+            { id: 'Assistência Técnica', name: '🛠️ Assistência', icon: 'fa-wrench' },
+            { id: 'Climatização', name: '❄️ Climatização', icon: 'fa-snowflake' },
+            { id: 'Mecânica', name: '🚗 Mecânica', icon: 'fa-car' },
             { id: 'Casa & Piscina', name: '🧹 Casa & Piscina', icon: 'fa-broom' },
             { id: 'Pet Shop', name: '🐾 Pet & Vet', icon: 'fa-paw' },
             { id: 'Eletrônicos', name: '📱 Eletrônicos', icon: 'fa-mobile-screen' },
             { id: 'Saúde e Farma', name: '🏥 Saúde & Farma', icon: 'fa-heart-pulse' },
-            { id: 'Vestuário', name: '👗 Moda & Vestuário', icon: 'fa-shirt' }
+            { id: 'Vestuário', name: '👗 Vestuário', icon: 'fa-shirt' }
         ];
 
         // GLOBAL APP STATE
-        let activeTypeFilter = 'all'; // 'all', 'product', 'service'
+        let activeTypeFilter = 'all';
         let selectedCategory = 'all';
         let currentModalMerchant = null;
-        let activeModalCatalogFilter = 'all';
         let leafletMap = null;
         let mapMarkers = [];
 
-        // INITIALIZE ON LOAD
+        // ON LOAD INITIALIZATION
         window.onload = function() {
             initLeafletMap();
             renderCategoryPills();
-            updateHeaderUserUI();
+            updateUI();
             renderApp();
         };
+
+        function saveMerchantsToStorage() {
+            localStorage.setItem('guidestock_merchants_data', JSON.stringify(merchantsData));
+        }
 
         // LEAFLET MAP INITIALIZATION
         function initLeafletMap() {
             const uberabaCenter = [-19.7472, -47.9319];
-            leafletMap = L.map('map').setView(uberabaCenter, 13);
+            leafletMap = L.map('map', {
+                zoomControl: true,
+                tap: true
+            }).setView(uberabaCenter, 13);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
-                attribution: '&copy; OpenStreetMap contributors | GuideStock Uberaba'
+                attribution: '&copy; OpenStreetMap | GuideStock Uberaba'
             }).addTo(leafletMap);
         }
 
-        // RECENTER MAP
         function recenterMap() {
             if (leafletMap) {
                 leafletMap.setView([-19.7472, -47.9319], 13);
             }
         }
 
-        // AUTHENTICATION LOGIC & UI UPDATES
-        function openAuthModal(defaultTab = 'login') {
-            switchAuthTab(defaultTab);
+        function scrollToMap() {
+            document.getElementById('mapSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function focusSearch() {
+            const input = document.getElementById('searchInput');
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => input.focus(), 300);
+        }
+
+        // MOBILE DRAWER TOGGLE
+        function toggleMobileDrawer() {
+            const drawer = document.getElementById('mobileDrawer');
+            drawer.classList.toggle('hidden');
+        }
+
+        // AUTHENTICATION MODAL SWITCHING & HANDLERS
+        function openAuthModal(tab = 'login') {
+            switchAuthTab(tab);
             document.getElementById('authModal').classList.remove('hidden');
         }
 
         function switchAuthTab(tab) {
-            const loginBtn = document.getElementById('authTabLoginBtn');
-            const registerBtn = document.getElementById('authTabRegisterBtn');
-            const loginFormView = document.getElementById('authTabLogin');
-            const registerFormView = document.getElementById('authTabRegister');
+            const btnLogin = document.getElementById('authTabLoginBtn');
+            const btnCons = document.getElementById('authTabConsBtn');
+            const btnMerch = document.getElementById('authTabMerchBtn');
+
+            const viewLogin = document.getElementById('authTabLogin');
+            const viewCons = document.getElementById('authTabRegisterConsumer');
+            const viewMerch = document.getElementById('authTabRegisterMerchant');
+
+            [btnLogin, btnCons, btnMerch].forEach(b => {
+                b.className = "flex-1 py-2 rounded-lg transition text-slate-300 hover:text-white";
+            });
+
+            viewLogin.classList.add('hidden');
+            viewCons.classList.add('hidden');
+            viewMerch.classList.add('hidden');
 
             if (tab === 'login') {
-                loginBtn.className = "flex-1 py-2 rounded-lg text-xs font-bold transition bg-brand-600 text-white shadow";
-                registerBtn.className = "flex-1 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white";
-                loginFormView.classList.remove('hidden');
-                registerFormView.classList.add('hidden');
-            } else {
-                registerBtn.className = "flex-1 py-2 rounded-lg text-xs font-bold transition bg-brand-600 text-white shadow";
-                loginBtn.className = "flex-1 py-2 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white";
-                registerFormView.classList.remove('hidden');
-                loginFormView.classList.add('hidden');
+                btnLogin.className = "flex-1 py-2 rounded-lg transition bg-brand-600 text-white shadow";
+                viewLogin.classList.remove('hidden');
+            } else if (tab === 'register_consumer') {
+                btnCons.className = "flex-1 py-2 rounded-lg transition bg-brand-600 text-white shadow";
+                viewCons.classList.remove('hidden');
+            } else if (tab === 'register_merchant') {
+                btnMerch.className = "flex-1 py-2 rounded-lg transition bg-brand-600 text-white shadow";
+                viewMerch.classList.remove('hidden');
             }
         }
 
@@ -900,7 +1007,7 @@
                 setCurrentUser(foundUser);
                 closeModal('authModal');
                 document.getElementById('loginForm').reset();
-                showToast(`Bem-vindo(a) de volta, ${foundUser.name}!`);
+                showToast(`Bem-vindo(a), ${foundUser.name}!`);
             } else {
                 showToast('E-mail ou senha incorretos!', 'error');
             }
@@ -915,7 +1022,7 @@
             const password = document.getElementById('regConsumerPassword').value;
 
             if (registeredUsers.some(u => u.email.toLowerCase() === email)) {
-                showToast('Este e-mail já está cadastrado no sistema!', 'error');
+                showToast('Este e-mail já está cadastrado!', 'error');
                 return;
             }
 
@@ -935,96 +1042,170 @@
             setCurrentUser(newConsumer);
             closeModal('authModal');
             document.getElementById('consumerRegisterForm').reset();
-            showToast(`Conta de Consumidor criada com sucesso! Bem-vindo(a), ${name}!`);
+            showToast(`Conta de consumidor criada com sucesso!`);
+        }
+
+        function handleMerchantRegisterSubmit(event) {
+            event.preventDefault();
+            const name = document.getElementById('regMerchName').value.trim();
+            const category = document.getElementById('regMerchCategory').value;
+            const type = document.getElementById('regMerchType').value;
+            const address = document.getElementById('regMerchAddress').value.trim();
+            const neighborhood = document.getElementById('regMerchNeighborhood').value;
+            const phone = document.getElementById('regMerchPhone').value.replace(/\D/g, '');
+            const email = document.getElementById('regMerchEmail').value.trim().toLowerCase();
+            const password = document.getElementById('regMerchPassword').value;
+
+            const newMerchantId = 'm_' + Date.now();
+
+            const newMerchantData = {
+                id: newMerchantId,
+                name: name,
+                category: category,
+                type: type,
+                address: `${address} - ${neighborhood}, Uberaba - MG`,
+                neighborhood: neighborhood,
+                lat: -19.7472 + (Math.random() - 0.5) * 0.03,
+                lng: -47.9319 + (Math.random() - 0.5) * 0.03,
+                phone: phone,
+                rating: 5.0,
+                reviewsCount: 1,
+                items: []
+            };
+
+            merchantsData.unshift(newMerchantData);
+            saveMerchantsToStorage();
+
+            const newMerchantUser = {
+                id: 'u_m_' + Date.now(),
+                name: name,
+                email: email,
+                password: password,
+                role: 'merchant',
+                merchantId: newMerchantId,
+                phone: phone,
+                neighborhood: neighborhood
+            };
+
+            registeredUsers.push(newMerchantUser);
+            localStorage.setItem('guidestock_registered_users', JSON.stringify(registeredUsers));
+
+            setCurrentUser(newMerchantUser);
+            closeModal('authModal');
+            document.getElementById('merchantRegisterForm').reset();
+            renderApp();
+            showToast(`Empresa/Serviço cadastrado com sucesso!`);
         }
 
         function loginAsDemo(role) {
-            let demoUser;
-            if (role === 'consumer') {
-                demoUser = registeredUsers.find(u => u.id === 'demo_consumer') || {
-                    id: 'demo_consumer',
-                    name: 'João Silva',
-                    email: 'joao@email.com',
-                    role: 'consumer'
-                };
-            } else {
-                demoUser = registeredUsers.find(u => u.id === 'demo_merchant') || {
-                    id: 'demo_merchant',
-                    name: 'TechZone Uberaba',
-                    email: 'techzone@email.com',
-                    role: 'merchant'
-                };
-            }
-
+            let demoUser = registeredUsers.find(u => u.id === (role === 'consumer' ? 'demo_consumer' : 'demo_merchant'));
             setCurrentUser(demoUser);
             closeModal('authModal');
-            showToast(`Sessão iniciada como ${demoUser.name}`);
+            showToast(`Logado como ${demoUser.name}`);
         }
 
         function setCurrentUser(user) {
             currentUser = user;
             localStorage.setItem('guidestock_active_user', JSON.stringify(user));
-            updateHeaderUserUI();
+            updateUI();
         }
 
         function handleLogout() {
             currentUser = null;
             localStorage.removeItem('guidestock_active_user');
-            updateHeaderUserUI();
+            updateUI();
+            if (!document.getElementById('mobileDrawer').classList.contains('hidden')) {
+                toggleMobileDrawer();
+            }
             showToast('Você saiu da sua conta.');
         }
 
-        function updateHeaderUserUI() {
-            const guestActions = document.getElementById('headerGuestActions');
-            const userActions = document.getElementById('headerUserActions');
-            const userName = document.getElementById('headerUserName');
-            const userRole = document.getElementById('headerUserRole');
-            const userAvatarIcon = document.getElementById('userAvatarIcon');
+        // UPDATE HEADERS, MOBILE DRAWER & BOTTOM NAV UI
+        function updateUI() {
+            const deskGuest = document.getElementById('desktopGuestActions');
+            const deskUser = document.getElementById('desktopUserActions');
+            const deskName = document.getElementById('desktopUserName');
+            const deskRole = document.getElementById('desktopUserRole');
+
+            const mobileHeadText = document.getElementById('mobileHeaderUserText');
+            const drawerUserCard = document.getElementById('drawerUserCard');
+            const drawerFooter = document.getElementById('drawerFooter');
+            const bottomNavText = document.getElementById('bottomNavUserText');
 
             if (currentUser) {
-                guestActions.classList.add('hidden');
-                userActions.classList.remove('hidden');
-                userName.textContent = currentUser.name;
+                // Desktop
+                deskGuest.classList.add('hidden');
+                deskUser.classList.remove('hidden');
+                deskName.textContent = currentUser.name;
+                deskRole.textContent = currentUser.role === 'merchant' ? 'Lojista / Prestador' : 'Consumidor';
 
-                if (currentUser.role === 'merchant') {
-                    userRole.textContent = 'Lojista / Prestador';
-                    userRole.className = 'text-[10px] text-blue-700 font-semibold uppercase';
-                    userAvatarIcon.className = 'fa-solid fa-store';
-                } else {
-                    userRole.textContent = 'Consumidor';
-                    userRole.className = 'text-[10px] text-brand-700 font-semibold uppercase';
-                    userAvatarIcon.className = 'fa-solid fa-user';
-                }
+                // Mobile
+                mobileHeadText.textContent = currentUser.name.split(' ')[0];
+                bottomNavText.textContent = currentUser.name.split(' ')[0];
+
+                drawerUserCard.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center text-sm">
+                            <i class="fa-solid ${currentUser.role === 'merchant' ? 'fa-store' : 'fa-user'}"></i>
+                        </div>
+                        <div>
+                            <span class="font-bold text-slate-900 block text-sm leading-tight">${currentUser.name}</span>
+                            <span class="text-xs text-brand-700 font-semibold uppercase">${currentUser.role === 'merchant' ? 'Lojista / Prestador' : 'Consumidor'}</span>
+                        </div>
+                    </div>
+                `;
+
+                drawerFooter.innerHTML = `
+                    <button onclick="handleLogout()" class="w-full py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Sair da Conta</span>
+                    </button>
+                `;
             } else {
-                guestActions.classList.remove('hidden');
-                userActions.classList.add('hidden');
+                // Desktop
+                deskGuest.classList.remove('hidden');
+                deskUser.classList.add('hidden');
+
+                // Mobile
+                mobileHeadText.textContent = 'Entrar';
+                bottomNavText.textContent = 'Conta';
+
+                drawerUserCard.innerHTML = `
+                    <div class="text-center py-1">
+                        <span class="font-bold text-slate-800 text-xs block mb-1">Visitante não conectado</span>
+                        <p class="text-[11px] text-slate-500 mb-2.5">Acesse para salvar contatos ou cadastrar sua empresa</p>
+                        <button onclick="openAuthModal('login'); toggleMobileDrawer();" class="w-full py-2 bg-brand-600 text-white font-bold text-xs rounded-xl shadow">
+                            Entrar ou Cadastrar
+                        </button>
+                    </div>
+                `;
+
+                drawerFooter.innerHTML = `
+                    <button onclick="openAuthModal('login'); toggleMobileDrawer();" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        <span>Fazer Login</span>
+                    </button>
+                `;
             }
         }
 
-        // TYPE FILTER SWITCHING (ALL / PRODUCTS / SERVICES)
+        // TYPE FILTER SWITCHING
         function setTypeFilter(type) {
             activeTypeFilter = type;
-            
             const btnAll = document.getElementById('tab-type-all');
             const btnProd = document.getElementById('tab-type-products');
             const btnServ = document.getElementById('tab-type-services');
 
-            [btnAll, btnProd, btnServ].forEach(btn => {
-                btn.className = "px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-700/50";
-            });
+            [btnAll, btnProd, btnServ].forEach(b => b.className = "px-3.5 sm:px-6 py-2 rounded-xl font-bold transition flex items-center gap-1.5 text-slate-300 hover:text-white");
 
-            if (type === 'all') {
-                btnAll.className = "px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 bg-brand-600 text-white shadow";
-            } else if (type === 'product') {
-                btnProd.className = "px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 bg-emerald-600 text-white shadow";
-            } else if (type === 'service') {
-                btnServ.className = "px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 bg-blue-600 text-white shadow";
-            }
+            if (type === 'all') btnAll.className = "px-3.5 sm:px-6 py-2 rounded-xl font-bold transition flex items-center gap-1.5 bg-brand-600 text-white shadow";
+            if (type === 'product') btnProd.className = "px-3.5 sm:px-6 py-2 rounded-xl font-bold transition flex items-center gap-1.5 bg-emerald-600 text-white shadow";
+            if (type === 'service') btnServ.className = "px-3.5 sm:px-6 py-2 rounded-xl font-bold transition flex items-center gap-1.5 bg-blue-600 text-white shadow";
 
             renderApp();
         }
 
-        // RENDER CATEGORY PILLS
+        // CATEGORY PILLS
         function renderCategoryPills() {
             const container = document.getElementById('categoryPills');
             container.innerHTML = categoriesList.map(cat => {
@@ -1034,7 +1215,7 @@
                     : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white';
 
                 return `
-                    <button onclick="selectCategory('${cat.id}')" class="px-3.5 py-1.5 rounded-full transition flex items-center gap-1.5 whitespace-nowrap border border-slate-700 ${activeClass}">
+                    <button onclick="selectCategory('${cat.id}')" class="px-3 py-1.5 rounded-full transition flex items-center gap-1 whitespace-nowrap border border-slate-700 ${activeClass}">
                         <span>${cat.name}</span>
                     </button>
                 `;
@@ -1047,7 +1228,6 @@
             renderApp();
         }
 
-        // RESET ALL FILTERS
         function resetFilters() {
             activeTypeFilter = 'all';
             selectedCategory = 'all';
@@ -1056,31 +1236,22 @@
             setTypeFilter('all');
             renderCategoryPills();
             renderApp();
-            showToast('Filtros redefinidos!');
         }
 
-        // MAIN FILTER AND RENDER ENGINE
+        // RENDER FILTERED MERCHANTS AND MAP
         function renderApp() {
             const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
             const selectedNeighborhood = document.getElementById('neighborhoodSelect').value;
             const sortVal = document.getElementById('sortSelect').value;
 
             let filteredMerchants = merchantsData.filter(m => {
-                
-                if (selectedNeighborhood !== 'all' && m.neighborhood !== selectedNeighborhood) {
-                    return false;
-                }
-
-                if (selectedCategory !== 'all' && m.category !== selectedCategory) {
-                    return false;
-                }
+                if (selectedNeighborhood !== 'all' && m.neighborhood !== selectedNeighborhood) return false;
+                if (selectedCategory !== 'all' && m.category !== selectedCategory) return false;
 
                 if (activeTypeFilter === 'product') {
-                    const hasProducts = m.items.some(i => i.type === 'product');
-                    if (!hasProducts) return false;
+                    if (!m.items.some(i => i.type === 'product')) return false;
                 } else if (activeTypeFilter === 'service') {
-                    const hasServices = m.items.some(i => i.type === 'service');
-                    if (!hasServices) return false;
+                    if (!m.items.some(i => i.type === 'service')) return false;
                 }
 
                 if (searchVal) {
@@ -1099,24 +1270,17 @@
                 return true;
             });
 
-            if (sortVal === 'rating') {
-                filteredMerchants.sort((a, b) => b.rating - a.rating);
-            } else if (sortVal === 'name') {
-                filteredMerchants.sort((a, b) => a.name.localeCompare(b.name));
-            } else if (sortVal === 'items') {
-                filteredMerchants.sort((a, b) => b.items.length - a.items.length);
-            }
+            if (sortVal === 'rating') filteredMerchants.sort((a, b) => b.rating - a.rating);
+            if (sortVal === 'name') filteredMerchants.sort((a, b) => a.name.localeCompare(b.name));
+            if (sortVal === 'items') filteredMerchants.sort((a, b) => b.items.length - a.items.length);
 
-            const titleCount = document.getElementById('resultsCountTitle');
-            const typeLabel = activeTypeFilter === 'product' ? 'com Produtos em Estoque' : 
-                              activeTypeFilter === 'service' ? 'com Serviços Locais' : '';
-            titleCount.textContent = `${filteredMerchants.length} Estabelecimentos ${typeLabel} em Uberaba`;
+            document.getElementById('resultsCountTitle').textContent = `${filteredMerchants.length} Locais em Uberaba`;
 
             renderGridCards(filteredMerchants);
             updateMapMarkers(filteredMerchants);
         }
 
-        // RENDER CARDS GRID
+        // RENDER CARDS
         function renderGridCards(merchants) {
             const grid = document.getElementById('merchantGrid');
             const emptyState = document.getElementById('emptyState');
@@ -1130,79 +1294,74 @@
             }
 
             grid.innerHTML = merchants.map(m => {
-                const productCount = m.items.filter(i => i.type === 'product').length;
-                const serviceCount = m.items.filter(i => i.type === 'service').length;
+                const prodCount = m.items.filter(i => i.type === 'product').length;
+                const servCount = m.items.filter(i => i.type === 'service').length;
 
                 let itemsToShow = m.items;
-                if (activeTypeFilter === 'product') {
-                    itemsToShow = m.items.filter(i => i.type === 'product');
-                } else if (activeTypeFilter === 'service') {
-                    itemsToShow = m.items.filter(i => i.type === 'service');
-                }
+                if (activeTypeFilter === 'product') itemsToShow = m.items.filter(i => i.type === 'product');
+                if (activeTypeFilter === 'service') itemsToShow = m.items.filter(i => i.type === 'service');
                 const topItems = itemsToShow.slice(0, 3);
 
-                let typeBadgeHTML = '';
-                if (m.type === 'service' || (serviceCount > 0 && productCount === 0)) {
-                    typeBadgeHTML = `<span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-md border border-blue-200">🛠️ Serviços Locais</span>`;
-                } else if (m.type === 'product' || (productCount > 0 && serviceCount === 0)) {
-                    typeBadgeHTML = `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-md border border-emerald-200">📦 Estoque Local</span>`;
+                let badgeHTML = '';
+                if (servCount > 0 && prodCount === 0) {
+                    badgeHTML = `<span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-md border border-blue-200">🛠️ Serviços</span>`;
+                } else if (prodCount > 0 && servCount === 0) {
+                    badgeHTML = `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-md border border-emerald-200">📦 Estoque</span>`;
                 } else {
-                    typeBadgeHTML = `<span class="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-md border border-purple-200">📦 Produtos & 🛠️ Serviços</span>`;
+                    badgeHTML = `<span class="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-md border border-purple-200">📦 Produtos & 🛠️ Serviços</span>`;
                 }
 
                 return `
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col overflow-hidden">
                         
-                        <div class="p-5 border-b border-slate-100 bg-slate-50/50">
-                            <div class="flex items-start justify-between gap-2 mb-2">
+                        <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+                            <div class="flex items-start justify-between gap-2 mb-1">
                                 <div>
-                                    ${typeBadgeHTML}
-                                    <h3 class="font-extrabold text-slate-900 text-base sm:text-lg mt-1.5 leading-snug">${m.name}</h3>
+                                    ${badgeHTML}
+                                    <h3 class="font-extrabold text-slate-900 text-base mt-1 leading-snug">${m.name}</h3>
                                 </div>
-                                <div class="flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-1 rounded-lg border border-amber-200 text-xs font-bold flex-shrink-0">
+                                <div class="flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-0.5 rounded-lg border border-amber-200 text-xs font-bold flex-shrink-0">
                                     <i class="fa-solid fa-star text-amber-400"></i>
                                     <span>${m.rating}</span>
                                 </div>
                             </div>
 
-                            <p class="text-xs text-slate-500 flex items-center gap-1.5 mt-1">
+                            <p class="text-xs text-slate-500 flex items-center gap-1 mt-1 truncate">
                                 <i class="fa-solid fa-location-dot text-brand-600"></i>
                                 <span class="truncate">${m.address}</span>
                             </p>
                         </div>
 
-                        <div class="p-4 flex-1 space-y-2.5">
-                            <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
-                                <span>Destaques disponíveis</span>
+                        <div class="p-3.5 flex-1 space-y-2">
+                            <div class="flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                <span>Principais Ofertas</span>
                                 <span>${m.items.length} itens</span>
                             </div>
 
-                            ${topItems.map(item => `
-                                <div class="bg-slate-50 hover:bg-slate-100 p-2.5 rounded-xl border border-slate-100 transition flex items-center justify-between gap-2 text-xs">
+                            ${topItems.length > 0 ? topItems.map(item => `
+                                <div class="bg-slate-50 p-2 rounded-xl border border-slate-100 flex items-center justify-between gap-2 text-xs">
                                     <div class="truncate">
                                         <span class="font-bold text-slate-800 block truncate">${item.title}</span>
-                                        <span class="text-[11px] text-slate-500">
+                                        <span class="text-[10px] text-slate-500">
                                             ${item.type === 'product' 
                                                 ? `<span class="text-emerald-700 font-medium"><i class="fa-solid fa-box"></i> ${item.stock} em estoque</span>`
-                                                : `<span class="text-blue-700 font-medium"><i class="fa-solid fa-clock"></i> ${item.duration || 'Serviço prestado'}</span>`
+                                                : `<span class="text-blue-700 font-medium"><i class="fa-solid fa-clock"></i> ${item.duration || 'Serviço'}</span>`
                                             }
                                         </span>
                                     </div>
-                                    <div class="text-right flex-shrink-0">
-                                        <span class="font-extrabold text-slate-900 block">R$ ${item.price.toFixed(2).replace('.', ',')}</span>
-                                    </div>
+                                    <span class="font-extrabold text-slate-900 flex-shrink-0">R$ ${item.price.toFixed(2).replace('.', ',')}</span>
                                 </div>
-                            `).join('')}
+                            `).join('') : '<p class="text-xs text-slate-400 italic py-2">Sem itens nesta categoria.</p>'}
 
                         </div>
 
-                        <div class="p-4 bg-white border-t border-slate-100 flex items-center gap-2">
-                            <button onclick="openCatalogModal('${m.id}')" class="flex-1 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <div class="p-3 bg-white border-t border-slate-100 flex items-center gap-2">
+                            <button onclick="openCatalogModal('${m.id}')" class="flex-1 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
                                 <i class="fa-solid fa-eye"></i>
-                                <span>Ver Catálogo & Serviços</span>
+                                <span>Ver Catálogo</span>
                             </button>
 
-                            <a href="https://wa.me/55${m.phone}?text=Olá! Encontrei seu estabelecimento no GuideStock Uberaba e gostaria de informações." target="_blank" class="p-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-xl transition font-bold text-xs flex items-center justify-center" title="Conversar no WhatsApp">
+                            <a href="https://wa.me/55${m.phone}?text=Olá! Vi no GuideStock Uberaba e gostaria de informações." target="_blank" class="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-xl transition font-bold text-xs flex items-center justify-center" title="WhatsApp">
                                 <i class="fa-brands fa-whatsapp text-lg"></i>
                             </a>
                         </div>
@@ -1212,7 +1371,7 @@
             }).join('');
         }
 
-        // UPDATE LEAFLET MAP MARKERS
+        // LEAFLET MAP MARKERS
         function updateMapMarkers(merchants) {
             if (!leafletMap) return;
 
@@ -1220,39 +1379,32 @@
             mapMarkers = [];
 
             merchants.forEach(m => {
-                const productCount = m.items.filter(i => i.type === 'product').length;
-                const serviceCount = m.items.filter(i => i.type === 'service').length;
+                const prodCount = m.items.filter(i => i.type === 'product').length;
+                const servCount = m.items.filter(i => i.type === 'service').length;
 
                 let markerColor = '#10b981';
-                if (m.type === 'service' || (serviceCount > 0 && productCount === 0)) {
-                    markerColor = '#3b82f6';
-                } else if (serviceCount > 0 && productCount > 0) {
-                    markerColor = '#a855f7';
-                }
+                if (servCount > 0 && prodCount === 0) markerColor = '#3b82f6';
+                if (servCount > 0 && prodCount > 0) markerColor = '#a855f7';
 
                 const customIcon = L.divIcon({
                     className: 'custom-div-icon',
                     html: `
-                        <div style="background-color: ${markerColor};" class="w-8 h-8 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white text-xs font-bold">
-                            <i class="fa-solid ${serviceCount > 0 && productCount === 0 ? 'fa-wrench' : 'fa-store'}"></i>
+                        <div style="background-color: ${markerColor};" class="w-7 h-7 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white text-xs font-bold">
+                            <i class="fa-solid ${servCount > 0 && prodCount === 0 ? 'fa-wrench' : 'fa-store'}"></i>
                         </div>
                     `,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 32],
-                    popupAnchor: [0, -32]
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 28],
+                    popupAnchor: [0, -28]
                 });
 
                 const marker = L.marker([m.lat, m.lng], { icon: customIcon }).addTo(leafletMap);
 
                 const popupContent = `
-                    <div class="p-2 text-xs font-sans max-w-xs">
-                        <span class="font-extrabold text-sm text-slate-900 block mb-1">${m.name}</span>
-                        <p class="text-slate-500 mb-2">${m.address}</p>
-                        <div class="bg-slate-100 p-2 rounded-lg mb-2">
-                            <span class="font-bold text-slate-700 block mb-1">${m.items.length} ofertas disponíveis</span>
-                            <span class="text-slate-600 block">${m.items.slice(0, 2).map(i => i.title).join(', ')}...</span>
-                        </div>
-                        <button onclick="openCatalogModal('${m.id}')" class="w-full py-1.5 bg-brand-600 text-white font-bold rounded-lg text-xs hover:bg-brand-700 transition">
+                    <div class="p-1.5 text-xs font-sans max-w-xs">
+                        <span class="font-extrabold text-sm text-slate-900 block mb-0.5">${m.name}</span>
+                        <p class="text-slate-500 text-[11px] mb-2">${m.address}</p>
+                        <button onclick="openCatalogModal('${m.id}')" class="w-full py-1 bg-brand-600 text-white font-bold rounded-lg text-xs">
                             Ver Opções
                         </button>
                     </div>
@@ -1263,13 +1415,12 @@
             });
         }
 
-        // OPEN CATALOG & SERVICES DETAIL MODAL
+        // CATALOG MODAL & ITEM MANAGEMENT
         function openCatalogModal(merchantId) {
             const merchant = merchantsData.find(m => m.id === merchantId);
             if (!merchant) return;
 
             currentModalMerchant = merchant;
-            activeModalCatalogFilter = 'all';
 
             document.getElementById('modalMerchantName').textContent = merchant.name;
             document.getElementById('modalCategoryBadge').textContent = merchant.category;
@@ -1280,35 +1431,35 @@
             const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(merchant.name + ' ' + merchant.address)}`;
             document.getElementById('modalGmapsBtn').href = gmapsUrl;
 
+            // Show 'Adicionar Item' if current user owns this store
+            const isOwner = currentUser && currentUser.role === 'merchant' && currentUser.merchantId === merchant.id;
+            const ownerAddBtnContainer = document.getElementById('ownerAddBtnContainer');
+            if (isOwner) {
+                ownerAddBtnContainer.classList.remove('hidden');
+            } else {
+                ownerAddBtnContainer.classList.add('hidden');
+            }
+
             filterModalCatalog('all');
             document.getElementById('catalogModal').classList.remove('hidden');
         }
 
-        // FILTER ITEMS INSIDE MODAL
         function filterModalCatalog(type) {
             if (!currentModalMerchant) return;
-
-            activeModalCatalogFilter = type;
 
             const btnAll = document.getElementById('modalTabAll');
             const btnProd = document.getElementById('modalTabProduct');
             const btnServ = document.getElementById('modalTabService');
 
-            [btnAll, btnProd, btnServ].forEach(btn => {
-                btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-white transition";
-            });
+            [btnAll, btnProd, btnServ].forEach(b => b.className = "px-3 py-1 rounded-lg text-xs font-bold text-slate-600 hover:bg-white transition");
 
-            if (type === 'all') {
-                btnAll.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-sm border border-slate-200";
-            } else if (type === 'product') {
-                btnProd.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-sm";
-            } else if (type === 'service') {
-                btnServ.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white shadow-sm";
-            }
+            if (type === 'all') btnAll.className = "px-3 py-1 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-sm border border-slate-200";
+            if (type === 'product') btnProd.className = "px-3 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-sm";
+            if (type === 'service') btnServ.className = "px-3 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white shadow-sm";
 
             const prodCount = currentModalMerchant.items.filter(i => i.type === 'product').length;
             const servCount = currentModalMerchant.items.filter(i => i.type === 'service').length;
-            
+
             document.getElementById('countModalAll').textContent = currentModalMerchant.items.length;
             document.getElementById('countModalProduct').textContent = prodCount;
             document.getElementById('countModalService').textContent = servCount;
@@ -1320,9 +1471,11 @@
             const container = document.getElementById('modalItemsContainer');
 
             if (itemsToRender.length === 0) {
-                container.innerHTML = `<div class="text-center py-8 text-slate-400 font-medium text-xs">Nenhum item desta categoria disponível neste estabelecimento.</div>`;
+                container.innerHTML = `<div class="text-center py-6 text-slate-400 font-medium text-xs">Nenhum item disponível neste catálogo.</div>`;
                 return;
             }
+
+            const isOwner = currentUser && currentUser.role === 'merchant' && currentUser.merchantId === currentModalMerchant.id;
 
             container.innerHTML = itemsToRender.map(item => {
                 const isProduct = item.type === 'product';
@@ -1331,117 +1484,102 @@
                 const whatsappUrl = `https://wa.me/55${currentModalMerchant.phone}?text=${whatsappMsg}`;
 
                 return `
-                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="font-extrabold text-slate-900 text-sm sm:text-base">${item.title}</span>
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                <span class="font-bold text-slate-900 text-sm">${item.title}</span>
                                 ${isProduct 
-                                    ? `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-md"><i class="fa-solid fa-box"></i> ${item.stock} em estoque</span>`
-                                    : `<span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-md"><i class="fa-solid fa-clock"></i> ${item.duration || 'Serviço'}</span>`
+                                    ? `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded"><i class="fa-solid fa-box"></i> ${item.stock} em estoque</span>`
+                                    : `<span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded"><i class="fa-solid fa-clock"></i> ${item.duration || 'Serviço'}</span>`
                                 }
                             </div>
-                            <p class="text-xs text-slate-500 mb-2">${item.desc}</p>
-                            <span class="text-base sm:text-lg font-black text-brand-700">R$ ${item.price.toFixed(2).replace('.', ',')}</span>
+                            <p class="text-xs text-slate-500 mb-1.5">${item.desc}</p>
+                            <span class="text-base font-extrabold text-brand-700">R$ ${item.price.toFixed(2).replace('.', ',')}</span>
                         </div>
 
-                        <a href="${whatsappUrl}" target="_blank" class="px-4 py-2.5 ${isProduct ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'} text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-sm flex-shrink-0">
-                            <i class="fa-brands fa-whatsapp text-base"></i>
-                            <span>${isProduct ? 'Pedir no WhatsApp' : 'Agendar pelo WhatsApp'}</span>
-                        </a>
+                        <div class="flex items-center gap-2">
+                            ${isOwner ? `
+                                <button onclick="deleteItemFromMerchant('${item.id}')" class="p-2.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl transition text-xs font-bold" title="Excluir Item">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            ` : ''}
+
+                            <a href="${whatsappUrl}" target="_blank" class="flex-1 sm:flex-none px-3.5 py-2 ${isProduct ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'} text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
+                                <i class="fa-brands fa-whatsapp text-sm"></i>
+                                <span>${isProduct ? 'Pedir no WhatsApp' : 'Agendar no WhatsApp'}</span>
+                            </a>
+                        </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // REGISTER MERCHANT & ITEM FORM
-        function openRegisterMerchantModal() {
-            document.getElementById('merchantRegisterModal').classList.remove('hidden');
+        // ADD NEW ITEM BY MERCHANT
+        function openAddItemModal() {
+            document.getElementById('addItemModal').classList.remove('hidden');
         }
 
-        function handleMerchantFormSubmit(event) {
+        function handleAddItemSubmit(event) {
             event.preventDefault();
+            if (!currentModalMerchant) return;
 
-            const name = document.getElementById('regName').value.trim();
-            const category = document.getElementById('regCategory').value;
-            const address = document.getElementById('regAddress').value.trim();
-            const neighborhood = document.getElementById('regNeighborhood').value;
-            const phone = document.getElementById('regPhone').value.replace(/\D/g, '');
+            const type = document.getElementById('newItemType').value;
+            const title = document.getElementById('newItemTitle').value.trim();
+            const price = parseFloat(document.getElementById('newItemPrice').value);
+            const extra = document.getElementById('newItemExtra').value.trim();
+            const desc = document.getElementById('newItemDesc').value.trim();
 
-            const itemTypeRadio = document.querySelector('input[name="itemType"]:checked');
-            const itemType = itemTypeRadio ? itemTypeRadio.value : 'product';
-
-            const itemTitle = document.getElementById('newItemTitle').value.trim();
-            const itemPrice = parseFloat(document.getElementById('newItemPrice').value);
-            const itemDesc = document.getElementById('newItemDesc').value.trim();
-
-            if (!name || !address || !phone || !itemTitle || isNaN(itemPrice)) {
-                showToast('Por favor, preencha todos os campos corretamente!', 'error');
-                return;
-            }
-
-            const newMerchant = {
-                id: 'm_' + Date.now(),
-                name: name,
-                category: category,
-                type: itemType === 'product' ? 'product' : 'service',
-                address: `${address} - ${neighborhood}, Uberaba - MG`,
-                neighborhood: neighborhood,
-                lat: -19.7472 + (Math.random() - 0.5) * 0.03,
-                lng: -47.9319 + (Math.random() - 0.5) * 0.03,
-                phone: phone,
-                rating: 5.0,
-                reviewsCount: 1,
-                items: [
-                    {
-                        id: 'i_' + Date.now(),
-                        title: itemTitle,
-                        type: itemType,
-                        price: itemPrice,
-                        desc: itemDesc,
-                        stock: itemType === 'product' ? 10 : null,
-                        duration: itemType === 'service' ? itemDesc : null
-                    }
-                ]
+            const newItem = {
+                id: 'i_' + Date.now(),
+                title: title,
+                type: type,
+                price: price,
+                desc: desc,
+                stock: type === 'product' ? extra : null,
+                duration: type === 'service' ? extra : null
             };
 
-            merchantsData.unshift(newMerchant);
+            currentModalMerchant.items.unshift(newItem);
+            saveMerchantsToStorage();
 
-            closeModal('merchantRegisterModal');
-            document.getElementById('merchantForm').reset();
+            closeModal('addItemModal');
+            document.getElementById('addItemForm').reset();
+            filterModalCatalog('all');
             renderApp();
-            showToast('Estabelecimento e oferta cadastrados com sucesso!');
+            showToast('Item adicionado ao seu catálogo!');
         }
 
-        // HELP MODAL TOGGLE
+        // DELETE ITEM BY MERCHANT
+        function deleteItemFromMerchant(itemId) {
+            if (!currentModalMerchant) return;
+
+            currentModalMerchant.items = currentModalMerchant.items.filter(i => i.id !== itemId);
+            saveMerchantsToStorage();
+
+            filterModalCatalog('all');
+            renderApp();
+            showToast('Item removido do catálogo.');
+        }
+
+        // HELPERS
         function toggleHelpModal() {
-            const modal = document.getElementById('helpModal');
-            modal.classList.toggle('hidden');
+            document.getElementById('helpModal').classList.toggle('hidden');
         }
 
-        // CLOSE MODAL HELPER
         function closeModal(modalId) {
             document.getElementById(modalId).classList.add('hidden');
         }
 
-        // TOAST NOTIFICATION HELPER
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toastMessage');
             const toastIcon = document.getElementById('toastIcon');
 
             toastMessage.textContent = message;
-
-            if (type === 'error') {
-                toastIcon.className = "fa-solid fa-circle-exclamation text-rose-400 text-lg";
-            } else {
-                toastIcon.className = "fa-solid fa-circle-check text-emerald-400 text-lg";
-            }
+            toastIcon.className = type === 'error' ? "fa-solid fa-circle-exclamation text-rose-400 text-lg" : "fa-solid fa-circle-check text-emerald-400 text-lg";
 
             toast.classList.remove('hidden');
-
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 3500);
+            setTimeout(() => toast.classList.add('hidden'), 3500);
         }
     </script>
 </body>
