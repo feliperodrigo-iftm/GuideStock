@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="GuideStock — encontre produtos e serviços em lojas físicas de Uberaba-MG e veja as opções no Google Maps." />
+  <meta name="theme-color" content="#16723a" />
+  <title>GuideStock | Encontre perto de você</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="demo-strip">
+    <div class="container demo-strip-inner">
+      <span>PROTÓTIPO DO PROJETO</span>
+      <span>Uberaba • Minas Gerais • Brasil</span>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a class="brand" href="#inicio" aria-label="GuideStock - início">
+        <span class="brand-frame">
+          <img src="assets/logo.png" alt="GuideStock" class="brand-logo" id="brandLogo" />
+        </span>
+      </a>
+
+      <div class="mobile-nav-panel" id="mobileNavPanel">
+        <nav class="main-nav" aria-label="Navegação principal">
+          <a href="#buscar">Buscar</a>
+          <a href="#mapa">Mapa</a>
+          <a href="#como-funciona">Como funciona</a>
+          <a href="#comerciante">Comerciante</a>
+        </nav>
+
+        <div class="nav-account" id="navAccount">
+          <button class="btn btn-ghost btn-small" type="button" data-auth-open="login">Entrar</button>
+          <button class="btn btn-primary btn-small" type="button" data-auth-open="register">Criar conta</button>
+        </div>
+      </div>
+
+      <button class="nav-menu" id="navMenuBtn" type="button" aria-label="Abrir menu" aria-controls="mobileNavPanel" aria-expanded="false">☰</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="inicio">
+      <div class="hero-glow glow-one"></div>
+      <div class="hero-glow glow-two"></div>
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <span class="eyebrow">Guia de compras em Uberaba</span>
+          <h1>Descubra <span>onde está.</span><br />Compare. Vá até a loja.</h1>
+          <p>O GuideStock ajuda você a encontrar produtos e serviços em estabelecimentos físicos, comparar opções e abrir a localização diretamente no Google Maps.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary btn-large" href="#buscar">Pesquisar agora <span>↗</span></a>
+            <button class="btn btn-outline btn-large" type="button" data-auth-open="register">Criar meu cadastro</button>
+          </div>
+          <div class="hero-highlights">
+            <div><strong>Produtos</strong><span>de várias categorias</span></div>
+            <div><strong>Serviços</strong><span>ligados à sua compra</span></div>
+            <div><strong>Mapa</strong><span>para chegar até a loja</span></div>
+          </div>
+        </div>
+
+        <div class="search-card" id="buscar">
+          <div class="search-card-head">
+            <div>
+              <span class="section-kicker">Pesquisa inteligente</span>
+              <h2>O que você procura?</h2>
+              <p>Encontre produtos, serviços e lojas próximas.</p>
+            </div>
+            <span class="city-pill">Uberaba-MG</span>
+          </div>
+
+          <div class="search-type" role="tablist" aria-label="Tipo de pesquisa">
+            <button type="button" class="search-type-btn is-active" data-search-type="all" role="tab" aria-selected="true">Tudo</button>
+            <button type="button" class="search-type-btn" data-search-type="produto" role="tab" aria-selected="false">Produtos</button>
+            <button type="button" class="search-type-btn" data-search-type="servico" role="tab" aria-selected="false">Serviços</button>
+          </div>
+
+          <form id="searchForm" class="search-form">
+            <label class="search-main-field">Produto ou serviço
+              <div class="search-input-wrap">
+                <span aria-hidden="true">⌕</span>
+                <input id="searchInput" type="search" placeholder="Ex.: caderno, ar-condicionado, limpeza de piscina" autocomplete="off" />
+                <button class="input-clear" id="clearSearch" type="button" aria-label="Limpar busca">×</button>
+              </div>
+            </label>
+
+            <div class="search-suggestions" id="searchSuggestions" aria-live="polite"></div>
+
+            <div class="form-row">
+              <label>Categoria
+                <select id="categorySelect">
+                  <option value="todos">Todas as categorias</option>
+                  <option value="papelaria">Papelaria</option>
+                  <option value="higiene">Higiene</option>
+                  <option value="eletronicos">Eletrônicos</option>
+                  <option value="casa">Casa</option>
+                  <option value="automotivo">Automotivo</option>
+                  <option value="piscina">Piscina e jardim</option>
+                  <option value="servicos">Serviços</option>
+                </select>
+              </label>
+              <label>Raio
+                <select id="radiusSelect">
+                  <option value="5">Até 5 km</option>
+                  <option value="10">Até 10 km</option>
+                  <option value="20">Até 20 km</option>
+                  <option value="cidade">Toda a cidade</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="form-options">
+              <label class="check"><input id="stockOnly" type="checkbox" checked /> <span>Somente disponíveis</span></label>
+              <label class="check"><input id="serviceOnly" type="checkbox" /> <span>Serviço relacionado</span></label>
+            </div>
+
+            <button class="btn btn-primary btn-full btn-search" type="submit">Pesquisar no GuideStock</button>
+            <p class="small-note">Você poderá comparar preço, disponibilidade, serviço e distância antes de sair de casa.</p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="section results-section" id="resultados">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <span class="section-kicker">Resultados</span>
+            <h2>Opções encontradas</h2>
+            <p id="resultsSubtitle">Resultados de demonstração para Uberaba-MG.</p>
+          </div>
+          <span class="result-count" id="resultCount">0 opções</span>
+        </div>
+
+        <div class="results-toolbar">
+          <button type="button" class="toolbar-chip is-active" data-sort="relevance">Mais relevantes</button>
+          <button type="button" class="toolbar-chip" data-sort="price">Menor preço</button>
+          <button type="button" class="toolbar-chip" data-sort="distance">Mais próximos</button>
+          <span class="toolbar-spacer"></span>
+          <span class="results-status" id="resultsStatus">Busca pronta</span>
+        </div>
+
+        <div class="content-grid">
+          <div class="results-list" id="resultsList" aria-live="polite"></div>
+
+          <aside class="map-panel" id="mapa">
+            <div class="map-head">
+              <div>
+                <span class="section-kicker">Localização</span>
+                <h3>Veja no Google Maps</h3>
+                <p>Explore Uberaba e abra a rota até cada loja.</p>
+              </div>
+              <span class="map-city">Uberaba-MG</span>
+            </div>
+
+            <div class="google-map-frame" id="mapFrameWrap" aria-label="Mapa do Google Maps de Uberaba">
+              <iframe
+                id="googleMapIframe"
+                title="Google Maps — Uberaba, Minas Gerais"
+                loading="lazy"
+                allowfullscreen
+                referrerpolicy="strict-origin-when-cross-origin"
+                src="https://www.google.com/maps?q=Uberaba%2C%20MG%2C%20Brasil&z=13&output=embed"></iframe>
+            </div>
+
+            <div class="map-actions">
+              <a class="btn btn-dark" id="openCityMap" target="_blank" rel="noopener">Abrir no Google Maps ↗</a>
+              <button class="btn btn-soft" id="useCurrentLocation" type="button">Usar minha localização</button>
+            </div>
+            <p class="map-note">Use os botões “Ver no mapa” para centralizar um resultado no mapa ou “Como chegar” para abrir a rota no Google Maps.</p>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="section feature-section" id="como-funciona">
+      <div class="container">
+        <div class="section-heading center">
+          <div>
+            <span class="section-kicker">Como funciona</span>
+            <h2>Uma busca pensada para a vida real</h2>
+            <p>Do que você precisa ao endereço onde encontrar.</p>
+          </div>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="icon-bubble">⌕</div>
+            <h3>1. Pesquise</h3>
+            <p>Digite o produto ou serviço e refine por categoria, raio, estoque e serviços relacionados.</p>
+          </article>
+          <article class="feature-card">
+            <div class="icon-bubble">↔</div>
+            <h3>2. Compare</h3>
+            <p>Veja preço, disponibilidade, distância e serviços em um único painel.</p>
+          </article>
+          <article class="feature-card">
+            <div class="icon-bubble">⌖</div>
+            <h3>3. Vá até a loja</h3>
+            <p>Abra a localização no Google Maps e planeje seu deslocamento.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section service-section">
+      <div class="container service-wrap">
+        <div class="service-copy">
+          <span class="section-kicker">Além do produto</span>
+          <h2>Encontre também quem pode instalar, limpar ou manter.</h2>
+          <p>O GuideStock amplia a pesquisa para serviços relacionados. Assim, uma compra pode continuar dentro da mesma plataforma, desde a descoberta do produto até a contratação do serviço.</p>
+          <div class="tag-list">
+            <span>Instalação</span><span>Manutenção</span><span>Limpeza</span><span>Entrega local</span><span>Assistência</span><span>Montagem</span>
+          </div>
+        </div>
+        <div class="service-demo">
+          <div class="demo-badge">Exemplo</div>
+          <div class="demo-header"><span>Busca</span><span>Ar-condicionado</span></div>
+          <div class="demo-row"><span>Produto</span><strong>12.000 BTUs • em estoque</strong></div>
+          <div class="demo-row"><span>Preço</span><strong>R$ 2.199,00</strong></div>
+          <div class="demo-row"><span>Serviço</span><strong>Instalação disponível ✓</strong></div>
+          <div class="demo-row"><span>Mapa</span><strong>1,8 km de distância</strong></div>
+          <div class="demo-route"><span>Destino</span><strong>Ver rota no Google Maps ↗</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section account-section">
+      <div class="container account-grid">
+        <div>
+          <span class="section-kicker">Sua conta</span>
+          <h2>Uma plataforma para quem compra e para quem vende.</h2>
+          <p>O cadastro organiza os dados do consumidor ou do comerciante e prepara o GuideStock para evoluir para favoritos, histórico de buscas, lojas, produtos, estoque e serviços.</p>
+        </div>
+        <div class="account-cards">
+          <button class="account-type-card" type="button" data-auth-open="register" data-auth-role="consumer">
+            <span class="account-icon">👤</span>
+            <span><strong>Sou consumidor</strong><small>Encontre, compare e salve suas buscas.</small></span>
+            <b>→</b>
+          </button>
+          <button class="account-type-card" type="button" data-auth-open="register" data-auth-role="merchant">
+            <span class="account-icon">🏪</span>
+            <span><strong>Sou comerciante</strong><small>Cadastre loja, estoque, produtos e serviços.</small></span>
+            <b>→</b>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section merchant-section" id="comerciante">
+      <div class="container merchant-grid">
+        <div>
+          <span class="section-kicker">Para comerciantes</span>
+          <h2>Transforme estoque em oportunidade.</h2>
+          <p>Cadastre sua loja, produtos, preços, disponibilidade e serviços. No projeto final, esses dados poderão alimentar a busca dos consumidores em tempo real.</p>
+        </div>
+        <div class="merchant-card">
+          <div class="merchant-point"><span>✓</span><div><strong>Dados da loja</strong><small>Nome, CNPJ, endereço e contato.</small></div></div>
+          <div class="merchant-point"><span>✓</span><div><strong>Produtos e estoque</strong><small>Preço, quantidade e disponibilidade.</small></div></div>
+          <div class="merchant-point"><span>✓</span><div><strong>Serviços relacionados</strong><small>Instalação, manutenção, limpeza e outros.</small></div></div>
+          <button class="btn btn-primary btn-full" id="merchantCta" type="button">Cadastrar minha loja</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section faq-section">
+      <div class="container faq-wrap">
+        <div class="section-heading">
+          <div><span class="section-kicker">Ajuda</span><h2>Perguntas rápidas</h2></div>
+        </div>
+        <div class="faq-grid">
+          <details><summary>O GuideStock vende os produtos?</summary><p>Não. A plataforma localiza onde o produto ou serviço está disponível presencialmente e direciona o consumidor até a loja.</p></details>
+          <details><summary>O cadastro já salva os dados?</summary><p>Sim. No protótipo, a conta fica salva neste navegador e você pode sair e entrar novamente com o mesmo e-mail e senha. A conta não é sincronizada entre aparelhos; para o site público, será necessário um servidor com banco de dados e autenticação segura.</p></details>
+          <details><summary>Posso procurar só serviços?</summary><p>Sim. Use a aba “Serviços” na pesquisa ou procure diretamente por termos como instalação, manutenção e limpeza.</p></details>
+          <details><summary>Como o Google Maps entra no projeto?</summary><p>O mapa do Google Maps já aparece dentro da página para Uberaba. Os botões de cada resultado abrem a loja no mapa e calculam a rota; uma chave da Maps Embed API pode ser configurada para o modo oficial do Google Maps Embed.</p></details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-wrap">
+      <div>
+        <div class="footer-brand-wrap"><img src="assets/logo.png" alt="GuideStock" class="footer-logo" id="footerLogo" /></div>
+        <p>Encontre produtos e serviços perto de você.</p>
+      </div>
+      <div class="footer-links"><a href="#inicio">Início</a><a href="#buscar">Buscar</a><a href="#mapa">Mapa</a><a href="#comerciante">Comerciante</a></div>
+      <div class="footer-city">Projeto GuideStock<br />Uberaba • Minas Gerais • Brasil</div>
+    </div>
+  </footer>
+
+  <div class="modal-backdrop" id="authModal" hidden>
+    <section class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <button class="modal-close" id="authClose" type="button" aria-label="Fechar">×</button>
+      <div class="auth-head">
+        <span class="section-kicker">GuideStock</span>
+        <h2 id="authTitle">Crie sua conta</h2>
+        <p id="authSubtitle">Escolha o tipo de cadastro para começar.</p>
+      </div>
+
+      <div class="auth-tabs" id="authTabs" role="tablist" aria-label="Tipo de conta">
+        <button class="auth-tab is-active" type="button" data-role-tab="consumer">Consumidor</button>
+        <button class="auth-tab" type="button" data-role-tab="merchant">Comerciante</button>
+      </div>
+
+      <form id="authForm" class="auth-form">
+        <input id="authMode" type="hidden" value="register" />
+        <input id="authRole" type="hidden" value="consumer" />
+
+        <div class="field-grid" id="basicFields">
+          <label>Nome completo
+            <input id="fullName" name="fullName" type="text" autocomplete="name" required placeholder="Seu nome" />
+          </label>
+          <label>Celular
+            <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="(34) 99999-9999" />
+          </label>
+        </div>
+
+        <div class="merchant-fields" id="merchantFields" hidden>
+          <div class="field-grid">
+            <label>Nome da loja
+              <input id="storeName" name="storeName" type="text" placeholder="Nome comercial" />
+            </label>
+            <label>CNPJ
+              <input id="cnpj" name="cnpj" type="text" inputmode="numeric" placeholder="00.000.000/0001-00" />
+            </label>
+          </div>
+          <div class="field-grid">
+            <label>Endereço da loja
+              <input id="address" name="address" type="text" placeholder="Rua, número, bairro" />
+            </label>
+            <label>Categoria principal
+              <select id="merchantCategory" name="merchantCategory">
+                <option value="varejo">Varejo geral</option>
+                <option value="papelaria">Papelaria</option>
+                <option value="casa">Casa</option>
+                <option value="eletronicos">Eletrônicos</option>
+                <option value="automotivo">Automotivo</option>
+                <option value="servicos">Serviços</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <label>E-mail
+          <input id="email" name="email" type="email" autocomplete="email" required placeholder="voce@email.com" />
+        </label>
+
+        <div class="field-grid">
+          <label>Senha
+            <div class="password-wrap"><input id="password" name="password" type="password" autocomplete="new-password" minlength="6" required placeholder="Mínimo de 6 caracteres" /><button type="button" class="password-toggle" data-password-target="password">Mostrar</button></div>
+          </label>
+          <label>Confirmar senha
+            <input id="passwordConfirm" name="passwordConfirm" type="password" autocomplete="new-password" minlength="6" required placeholder="Repita a senha" />
+          </label>
+        </div>
+
+        <label class="terms-check"><input id="terms" type="checkbox" required /> <span>Concordo com o uso dos dados para o funcionamento do protótipo.</span></label>
+
+        <button class="btn btn-primary btn-full btn-large" type="submit" id="authSubmit">Criar minha conta</button>
+        <p class="auth-switch"><span id="authSwitchText">Já tem uma conta?</span> <button type="button" id="authSwitchBtn">Entrar</button></p>
+        <p class="form-disclaimer">Protótipo: a conta fica salva neste navegador. Use uma senha que você não utiliza em outros sites. Esta versão ainda não é adequada para dados reais ou publicação pública.</p>
+      </form>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
