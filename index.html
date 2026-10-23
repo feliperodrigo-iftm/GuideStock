@@ -44,11 +44,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
         #map { z-index: 10; }
-        .leaflet-popup-content-wrapper { border-radius: 12px; padding: 4px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .leaflet-popup-content-wrapper { border-radius: 14px; padding: 4px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15); }
         
         /* Mobile Drawer Slide Animation */
         .drawer-overlay { transition: opacity 0.3s ease-in-out; }
@@ -72,7 +72,7 @@
             <div class="flex items-center justify-between h-16 sm:h-20">
                 
                 <!-- Logo & Subtitle -->
-                <div class="flex items-center gap-2.5 cursor-pointer" onclick="resetFilters()">
+                <div class="flex items-center gap-2.5 cursor-pointer select-none" onclick="resetFilters()">
                     <div class="w-10 h-10 bg-gradient-to-br from-brand-600 to-teal-700 text-white rounded-xl flex items-center justify-center shadow-md shadow-brand-600/20 flex-shrink-0">
                         <i class="fa-solid fa-store text-lg sm:text-xl"></i>
                     </div>
@@ -128,9 +128,9 @@
                     </button>
                 </div>
 
-                <!-- Mobile Hamburger Button -->
+                <!-- Mobile Header Actions -->
                 <div class="flex md:hidden items-center gap-2">
-                    <button onclick="openAuthModal('login')" class="p-2 text-brand-700 bg-brand-50 rounded-xl font-bold text-xs flex items-center gap-1">
+                    <button onclick="openAuthModal('login')" class="p-2 text-brand-700 bg-brand-50 rounded-xl font-bold text-xs flex items-center gap-1 border border-brand-200">
                         <i class="fa-solid fa-user"></i>
                         <span id="mobileHeaderUserText">Entrar</span>
                     </button>
@@ -215,14 +215,14 @@
             
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-brand-400 text-xs font-medium mb-3">
                 <span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
-                <span>Produtos & Serviços Locais em Uberaba</span>
+                <span>Produtos & Serviços Locais em Uberaba - MG</span>
             </div>
 
             <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight mb-2 sm:mb-3">
                 O que você precisa comprar ou contratar hoje?
             </h1>
             <p class="text-xs sm:text-base text-slate-300 max-w-2xl mx-auto mb-6">
-                Encontre o produto exato em estoque ou agende serviços com profissionais em Uberaba - MG.
+                Encontre o produto exato em estoque ou agende serviços com profissionais em Uberaba sem intermediários.
             </p>
 
             <!-- TYPE SELECTOR TABS -->
@@ -249,7 +249,7 @@
                 <!-- Search Input -->
                 <div class="relative flex-1 w-full">
                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                    <input type="text" id="searchInput" oninput="renderApp()" placeholder="Buscar produto, serviço ou loja (ex: ar-condicionado, troca de tela, ração)..." class="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                    <input type="text" id="searchInput" oninput="renderApp()" placeholder="Buscar produto, serviço ou loja (ex: ar-condicionado, troca de tela, ração, bateria)..." class="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
                 </div>
 
                 <!-- Neighborhood Dropdown -->
@@ -842,8 +842,8 @@
                 name: 'SmartFix Assistência Técnica',
                 category: 'Assistência Técnica',
                 type: 'both',
-                address: 'Av. Leopoldino de Oliveira, 1850 - Centro, Uberaba - MG',
-                neighborhood: 'Centro',
+                address: 'Av. Leopoldino de Oliveira, 1850 - Mercês, Uberaba - MG',
+                neighborhood: 'Mercês',
                 lat: -19.7468,
                 lng: -47.9355,
                 phone: '34991234567',
@@ -873,12 +873,29 @@
                 ]
             },
             {
+                id: 'piscinacasa',
+                name: 'Piscina & Casa Express',
+                category: 'Casa & Piscina',
+                type: 'both',
+                address: 'Rua Bento Ferreira, 210 - Santa Marta, Uberaba - MG',
+                neighborhood: 'Santa Marta',
+                lat: -19.7410,
+                lng: -47.9410,
+                phone: '34998882233',
+                rating: 4.9,
+                reviewsCount: 78,
+                items: [
+                    { id: 'pc1', title: 'Cloro Granulado Ação Choque 10kg', type: 'product', price: 210.00, desc: 'Purificação completa e rápida da água.', stock: 14 },
+                    { id: 'pc2', title: 'Limpeza Físico-Química e Aspiração de Piscina', type: 'service', price: 130.00, desc: 'Medição de pH, cloração e aspiração do fundo.', duration: 'Agende em até 48h' }
+                ]
+            },
+            {
                 id: 'petvet',
                 name: 'Triângulo Pet & Vet',
                 category: 'Pet Shop',
                 type: 'both',
-                address: 'Av. Prudente de Morais, 850 - Abadia, Uberaba - MG',
-                neighborhood: 'Abadia',
+                address: 'Av. Prudente de Morais, 850 - Fabrício, Uberaba - MG',
+                neighborhood: 'Fabrício',
                 lat: -19.7560,
                 lng: -47.9230,
                 phone: '34997776655',
@@ -913,21 +930,42 @@
         let leafletMap = null;
         let mapMarkers = [];
 
+        // PHONE NUMBER SANITIZER FOR WHATSAPP
+        function formatWhatsAppPhone(phone) {
+            if (!phone) return '5534999999999';
+            let clean = phone.replace(/\D/g, '');
+            if (clean.length === 10 || clean.length === 11) {
+                clean = '55' + clean;
+            }
+            return clean;
+        }
+
         // ON LOAD INITIALIZATION
         window.onload = function() {
             initLeafletMap();
             renderCategoryPills();
             updateUI();
             renderApp();
+
+            window.addEventListener('resize', () => {
+                if (leafletMap) {
+                    leafletMap.invalidateSize();
+                }
+            });
         };
 
         function saveMerchantsToStorage() {
             localStorage.setItem('guidestock_merchants_data', JSON.stringify(merchantsData));
         }
 
-        // LEAFLET MAP INITIALIZATION
+        // LEAFLET MAP INITIALIZATION & SAFE RE-CENTERING
         function initLeafletMap() {
             const uberabaCenter = [-19.7472, -47.9319];
+            
+            if (leafletMap) {
+                leafletMap.remove();
+            }
+
             leafletMap = L.map('map', {
                 zoomControl: true,
                 tap: true
@@ -937,22 +975,35 @@
                 maxZoom: 19,
                 attribution: '&copy; OpenStreetMap | GuideStock Uberaba'
             }).addTo(leafletMap);
+
+            setTimeout(() => {
+                if (leafletMap) leafletMap.invalidateSize();
+            }, 300);
         }
 
         function recenterMap() {
             if (leafletMap) {
                 leafletMap.setView([-19.7472, -47.9319], 13);
+                leafletMap.invalidateSize();
             }
         }
 
         function scrollToMap() {
-            document.getElementById('mapSection').scrollIntoView({ behavior: 'smooth' });
+            const mapSec = document.getElementById('mapSection');
+            if (mapSec) {
+                mapSec.scrollIntoView({ behavior: 'smooth' });
+                setTimeout(() => {
+                    if (leafletMap) leafletMap.invalidateSize();
+                }, 400);
+            }
         }
 
         function focusSearch() {
             const input = document.getElementById('searchInput');
-            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setTimeout(() => input.focus(), 300);
+            if (input) {
+                input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => input.focus(), 300);
+            }
         }
 
         // MOBILE DRAWER TOGGLE
@@ -1099,9 +1150,11 @@
 
         function loginAsDemo(role) {
             let demoUser = registeredUsers.find(u => u.id === (role === 'consumer' ? 'demo_consumer' : 'demo_merchant'));
-            setCurrentUser(demoUser);
-            closeModal('authModal');
-            showToast(`Logado como ${demoUser.name}`);
+            if (demoUser) {
+                setCurrentUser(demoUser);
+                closeModal('authModal');
+                showToast(`Logado como ${demoUser.name}`);
+            }
         }
 
         function setCurrentUser(user) {
@@ -1238,26 +1291,32 @@
             renderApp();
         }
 
-        // RENDER FILTERED MERCHANTS AND MAP
+        // DEEP SEARCH & FILTER ENGINE
         function renderApp() {
             const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
             const selectedNeighborhood = document.getElementById('neighborhoodSelect').value;
             const sortVal = document.getElementById('sortSelect').value;
 
             let filteredMerchants = merchantsData.filter(m => {
+                // Filter by Neighborhood
                 if (selectedNeighborhood !== 'all' && m.neighborhood !== selectedNeighborhood) return false;
+                
+                // Filter by Category
                 if (selectedCategory !== 'all' && m.category !== selectedCategory) return false;
 
+                // Filter by Offer Type
                 if (activeTypeFilter === 'product') {
                     if (!m.items.some(i => i.type === 'product')) return false;
                 } else if (activeTypeFilter === 'service') {
                     if (!m.items.some(i => i.type === 'service')) return false;
                 }
 
+                // Deep Query Search
                 if (searchVal) {
                     const matchMerchant = m.name.toLowerCase().includes(searchVal) ||
                                           m.category.toLowerCase().includes(searchVal) ||
-                                          m.address.toLowerCase().includes(searchVal);
+                                          m.address.toLowerCase().includes(searchVal) ||
+                                          m.neighborhood.toLowerCase().includes(searchVal);
 
                     const matchItems = m.items.some(i => 
                         i.title.toLowerCase().includes(searchVal) || 
@@ -1311,6 +1370,10 @@
                     badgeHTML = `<span class="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-md border border-purple-200">📦 Produtos & 🛠️ Serviços</span>`;
                 }
 
+                const cleanPhone = formatWhatsAppPhone(m.phone);
+                const defaultMsg = encodeURIComponent(`Olá! Vi o anúncio da ${m.name} no GuideStock Uberaba e gostaria de mais informações.`);
+                const waUrl = `https://wa.me/${cleanPhone}?text=${defaultMsg}`;
+
                 return `
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col overflow-hidden">
                         
@@ -1361,7 +1424,7 @@
                                 <span>Ver Catálogo</span>
                             </button>
 
-                            <a href="https://wa.me/55${m.phone}?text=Olá! Vi no GuideStock Uberaba e gostaria de informações." target="_blank" class="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-xl transition font-bold text-xs flex items-center justify-center" title="WhatsApp">
+                            <a href="${waUrl}" target="_blank" class="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-xl transition font-bold text-xs flex items-center justify-center" title="WhatsApp">
                                 <i class="fa-brands fa-whatsapp text-lg"></i>
                             </a>
                         </div>
@@ -1476,12 +1539,13 @@
             }
 
             const isOwner = currentUser && currentUser.role === 'merchant' && currentUser.merchantId === currentModalMerchant.id;
+            const cleanPhone = formatWhatsAppPhone(currentModalMerchant.phone);
 
             container.innerHTML = itemsToRender.map(item => {
                 const isProduct = item.type === 'product';
                 const userNameStr = currentUser ? ` Me chamo ${currentUser.name}.` : '';
                 const whatsappMsg = encodeURIComponent(`Olá! Vi no GuideStock Uberaba o item: "${item.title}" e gostaria de solicitar/agendar.${userNameStr}`);
-                const whatsappUrl = `https://wa.me/55${currentModalMerchant.phone}?text=${whatsappMsg}`;
+                const whatsappUrl = `https://wa.me/${cleanPhone}?text=${whatsappMsg}`;
 
                 return `
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
